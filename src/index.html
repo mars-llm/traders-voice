@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traders Voice - Local Speech-to-Text</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-brand">
+        <svg class="logo" width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect x="16" y="8" width="8" height="14" rx="4" fill="#3b82f6"/>
+          <path d="M20 22 L20 28" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
+          <path d="M14 28 L26 28" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12 18 C12 21.3137 15.6863 24 20 24 C24.3137 24 28 21.3137 28 18" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <path d="M4 14 L6 12 L8 16 L10 10 L12 14" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/>
+          <path d="M28 14 L30 16 L32 10 L34 12 L36 14" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/>
+        </svg>
+        <h1>Traders Voice</h1>
+      </div>
+      <div class="model-selector">
+        <select class="model-select" id="modelSelect">
+          <optgroup label="English (Higher Accuracy)">
+            <option value="Xenova/whisper-tiny.en">tiny.en (41MB)</option>
+            <option value="Xenova/whisper-base.en">base.en (77MB)</option>
+          </optgroup>
+          <optgroup label="Multilingual">
+            <option value="Xenova/whisper-tiny">tiny (39MB)</option>
+            <option value="Xenova/whisper-base">base (75MB)</option>
+          </optgroup>
+        </select>
+        <div class="model-info" id="modelInfo">English only</div>
+      </div>
+    </div>
+
+    <div class="record-section">
+      <button class="record-btn idle" id="recordBtn">
+        <div class="record-icon"></div>
+      </button>
+      <div class="duration" id="duration" style="display: none;">0:00</div>
+      <div class="status-text" id="statusText">Click to record</div>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="progress-section" id="progressSection">
+      <div class="progress-text" id="progressText">Loading model...</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <div class="trade-card" id="tradeCard"></div>
+
+    <div class="result-section" id="resultSection">
+      <div class="transcription" id="transcription"></div>
+      <div class="result-actions">
+        <button class="btn btn-secondary" id="clearBtn">Clear</button>
+        <button class="btn btn-primary" id="copyBtn">Copy</button>
+      </div>
+    </div>
+
+    <div class="hint">Press Space to start/stop recording</div>
+
+    <footer class="footer">
+      <a href="https://github.com/YOUR_USERNAME/traders-voice" target="_blank" rel="noopener noreferrer" class="github-link">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        <span>Open Source</span>
+      </a>
+    </footer>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
