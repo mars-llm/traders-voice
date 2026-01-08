@@ -26,3 +26,4 @@ npm-debug.log*
 
 # Archive (old/unused files)
 archive/
+.playwright-mcp/

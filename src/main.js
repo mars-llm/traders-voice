@@ -1143,10 +1143,6 @@ const aboutModalBody = `
     <p class="privacy-note">Your audio never leaves your device. All speech recognition happens locally using your CPU/GPU.</p>
   </div>
 
-  <div class="about-section">
-    <h3>Open Source</h3>
-    <p>This project is free and open source. Contributions welcome!</p>
-  </div>
 `;
 
 // Create modals on page load

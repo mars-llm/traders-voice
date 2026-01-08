@@ -78,7 +78,7 @@ body {
 /* Main Container */
 .container {
   width: 100%;
-  max-width: 480px;
+  max-width: 560px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -92,7 +92,6 @@ body {
   align-items: center;
   padding: var(--space-4);
   border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
   gap: var(--space-3);
 }
 
@@ -104,10 +103,12 @@ body {
 
 .logo {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  object-fit: contain;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  background: var(--bg-base);
+  border: 1px solid var(--border);
 }
 
 .header h1 {
@@ -943,29 +944,30 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-elevated);
-  color: var(--fg-secondary);
+  color: var(--fg-muted);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease);
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .icon-btn:hover {
-  border-color: var(--border-focus);
   color: var(--fg-primary);
   background: var(--bg-hover);
+  border-color: var(--border-focus);
 }
 
 .icon-btn svg {
   flex-shrink: 0;
   display: block;
-  width: 18px;
-  height: 18px;
-  stroke-width: 2.5;
+  width: 16px;
+  height: 16px;
 }
 
 /* Footer - Privacy First */
@@ -1031,8 +1033,8 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 480px;
-  max-height: 80vh;
+  max-width: 520px;
+  max-height: 90vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1091,7 +1093,7 @@ body {
 }
 
 .modal-body {
-  padding: var(--space-5);
+  padding: var(--space-4);
   overflow-y: auto;
   flex: 1;
   min-height: 0;
@@ -1106,7 +1108,7 @@ body {
 
 /* Example Groups */
 .example-group {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-3);
 }
 
 .example-group h3 {
@@ -1122,11 +1124,11 @@ body {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: var(--space-3);
+  padding: 6px var(--space-3);
   font-size: 13px;
   color: var(--fg-secondary);
-  margin-bottom: var(--space-2);
-  line-height: 1.5;
+  margin-bottom: 6px;
+  line-height: 1.4;
 }
 
 .tips-list {
@@ -1137,10 +1139,10 @@ body {
 .tips-list li {
   font-size: 13px;
   color: var(--fg-secondary);
-  padding: var(--space-2) 0;
+  padding: 4px 0;
   padding-left: var(--space-4);
   position: relative;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .tips-list li::before {
@@ -1162,7 +1164,7 @@ body {
 
 /* About Section */
 .about-section {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-3);
 }
 
 .about-section:last-child {
@@ -1186,17 +1188,17 @@ body {
 .tech-list {
   list-style: none;
   padding: 0;
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
 }
 
 .tech-list li {
   font-size: 12px;
   color: var(--fg-secondary);
-  padding: var(--space-2) var(--space-3);
+  padding: 6px var(--space-3);
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  margin-bottom: var(--space-2);
+  margin-bottom: 6px;
 }
 
 .tech-list strong {
@@ -1208,8 +1210,8 @@ body {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  margin-bottom: var(--space-5);
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 .privacy-section h3 {
@@ -1283,8 +1285,8 @@ body {
   }
 
   .icon-btn svg {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
   }
 
   /* Model selector: Full width on mobile */
@@ -1465,8 +1467,8 @@ body {
   }
 
   .logo {
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
   }
 
   /* Icon buttons: Still maintain 44px minimum */
