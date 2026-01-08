@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  base: '/traders-voice/',
   root: 'src',
   publicDir: '../public',
   build: {
@@ -38,8 +39,8 @@ export default defineConfig({
         theme_color: '#0f2027',
         background_color: '#0f2027',
         display: 'standalone',
-        start_url: '/',
-        scope: '/',
+        start_url: '/traders-voice/',
+        scope: '/traders-voice/',
         icons: [
           {
             src: 'icon-192.png',
