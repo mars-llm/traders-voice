@@ -11,6 +11,7 @@ export default defineConfig({
   },
   server: {
     port: 5174,
+    strictPort: true,
     open: true,
     headers: {
       'Cross-Origin-Embedder-Policy': 'require-corp',
