@@ -19,7 +19,7 @@
   --fg-faint: #71717a;
 
   /* Borders */
-  --border: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.06);
   --border-subtle: rgba(255, 255, 255, 0.05);
   --border-focus: rgba(255, 255, 255, 0.12);
 
@@ -164,8 +164,8 @@ body {
 }
 
 .record-btn {
-  width: 80px;
-  height: 80px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
@@ -173,10 +173,21 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .record-btn.idle {
   background: var(--error);
+}
+
+.record-btn.idle::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .record-btn.idle:hover {
@@ -1273,6 +1284,30 @@ body {
   text-align: center;
   color: var(--fg-faint);
   font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 300px;
+}
+
+.empty-state-icon {
+  color: var(--fg-faint);
+  opacity: 0.5;
+}
+
+.empty-state-text {
+  font-size: 15px;
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+
+.empty-state-hint {
+  font-size: 13px;
+  color: var(--fg-faint);
+  max-width: 320px;
+  line-height: 1.5;
 }
 
 /* Hide empty state when results are showing */
@@ -1285,23 +1320,25 @@ body {
 @media (min-width: 900px) {
   .container {
     max-width: 1100px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
   }
 
   .main-layout {
     flex-direction: row;
-    gap: var(--space-5);
-    align-items: flex-start;
+    align-items: stretch;
   }
 
   .left-panel {
-    width: 340px;
+    width: 400px;
     flex-shrink: 0;
     border-bottom: none;
-    background: var(--bg-surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    background: transparent;
     position: sticky;
-    top: var(--space-5);
+    top: 0;
   }
 
   .left-panel .record-section {
@@ -1310,9 +1347,7 @@ body {
 
   .right-panel {
     flex: 1;
-    background: var(--bg-surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
+    background: transparent;
     min-height: 300px;
   }
 
@@ -1329,28 +1364,20 @@ body {
     border-top: 1px solid var(--border);
   }
 
-
-  /* Container becomes full-width card holder */
-  .container {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-  }
-
-  /* Header stays full width */
+  /* Header integrated into container */
   .header {
-    background: var(--bg-surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    margin-bottom: var(--space-5);
+    background: transparent;
+    border-radius: 0;
+    border: none;
+    margin-bottom: 0;
   }
 
-  /* Footer stays full width */
+  /* Footer integrated into container */
   .footer {
-    background: var(--bg-surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    margin-top: var(--space-5);
+    background: transparent;
+    border-radius: 0;
+    border: none;
+    margin-top: 0;
   }
 }
 
