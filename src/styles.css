@@ -1421,20 +1421,20 @@ body {
     height: 20px;
   }
 
-  /* Model selector: Full width on mobile */
+  /* Model selector: Flexible width on mobile */
   .model-selector {
-    width: 100%;
-    align-items: stretch;
+    flex: 1;
+    min-width: 0;
   }
 
   .model-select {
     width: 100%;
-    padding: var(--space-3) var(--space-3);
-    font-size: 12px;
+    padding: var(--space-2) var(--space-2);
+    font-size: 11px;
   }
 
   .model-info {
-    text-align: left;
+    display: none; /* Hide "English only" on mobile to save space */
   }
 
   /* Record section: Adjust spacing */
@@ -1515,6 +1515,17 @@ body {
     padding: var(--space-3);
     grid-template-columns: 1fr;
     gap: var(--space-2);
+  }
+
+  /* Empty state: Reduce height on mobile */
+  .empty-state {
+    min-height: 180px;
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .empty-state-icon {
+    width: 36px;
+    height: 36px;
   }
 
   /* Saved notes */
