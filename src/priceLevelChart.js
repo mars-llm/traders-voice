@@ -13,7 +13,7 @@
  * @param {string} action - 'buy' or 'sell'
  * @returns {number} - R:R ratio
  */
-function calculateRiskReward(entry, stopLoss, takeProfit, action) {
+export function calculateRiskReward(entry, stopLoss, takeProfit, action) {
   const isBuy = action === 'buy';
 
   let risk, reward;
@@ -36,7 +36,7 @@ function calculateRiskReward(entry, stopLoss, takeProfit, action) {
  * @param {number} level - Level price
  * @returns {string} - Formatted percentage
  */
-function calculatePercentage(entry, level) {
+export function calculatePercentage(entry, level) {
   if (!entry || entry === 0) return '0%';
   const pct = ((level - entry) / entry) * 100;
   return (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
@@ -47,7 +47,7 @@ function calculatePercentage(entry, level) {
  * @param {number} price - Price to format
  * @returns {string} - Formatted price
  */
-function formatPrice(price) {
+export function formatPrice(price) {
   if (price >= 1000) {
     return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
