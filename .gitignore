@@ -12,7 +12,9 @@ dist/
 
 # OS
 .DS_Store
+**/.DS_Store
 Thumbs.db
+**/Thumbs.db
 
 # Logs
 *.log
@@ -21,3 +23,6 @@ npm-debug.log*
 # Environment
 .env
 .env.*
+
+# Archive (old/unused files)
+archive/

@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node create-icons.mjs && vite build",
+    "build": "node scripts/generate-icons.mjs && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "generate-icons": "node create-icons.mjs"
+    "generate-icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.5.1"

@@ -28,13 +28,13 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png'],
+      includeAssets: ['favicon-32.png', 'favicon-16.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Traders Voice',
         short_name: 'TradersVoice',
         description: 'Local speech-to-text tool for traders using Whisper AI',
-        theme_color: '#09090b',
-        background_color: '#09090b',
+        theme_color: '#0f2027',
+        background_color: '#0f2027',
         display: 'standalone',
         start_url: '/',
         scope: '/',
