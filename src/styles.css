@@ -59,8 +59,7 @@
 }
 
 html, body {
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
 }
 
 body {
@@ -1247,6 +1246,115 @@ body {
 }
 
 /* ============================================
+ * TWO-COLUMN DESKTOP LAYOUT
+ * ============================================ */
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+}
+
+.left-panel {
+  border-bottom: 1px solid var(--border);
+}
+
+.left-panel .hint {
+  border-top: none;
+}
+
+.right-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Empty state placeholder */
+.empty-state {
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  color: var(--fg-faint);
+  font-size: 14px;
+}
+
+/* Hide empty state when results are showing */
+.right-panel:has(.visible) .empty-state,
+.right-panel:has(.progress-section.visible) .empty-state {
+  display: none;
+}
+
+/* Desktop: Two-column layout */
+@media (min-width: 900px) {
+  .container {
+    max-width: 1100px;
+  }
+
+  .main-layout {
+    flex-direction: row;
+    gap: var(--space-5);
+    align-items: flex-start;
+  }
+
+  .left-panel {
+    width: 340px;
+    flex-shrink: 0;
+    border-bottom: none;
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    position: sticky;
+    top: var(--space-5);
+  }
+
+  .left-panel .record-section {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .right-panel {
+    flex: 1;
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    min-height: 300px;
+  }
+
+  /* Adjust sections inside right panel */
+  .right-panel .trade-card.visible {
+    border-top: none;
+  }
+
+  .right-panel .result-section {
+    border-top: 1px solid var(--border);
+  }
+
+  .right-panel .saved-notes-section {
+    border-top: 1px solid var(--border);
+  }
+
+
+  /* Container becomes full-width card holder */
+  .container {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+  }
+
+  /* Header stays full width */
+  .header {
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    margin-bottom: var(--space-5);
+  }
+
+  /* Footer stays full width */
+  .footer {
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    margin-top: var(--space-5);
+  }
+}
+
+/* ============================================
  * MOBILE RESPONSIVE
  * ============================================ */
 
@@ -1270,12 +1378,9 @@ body {
     font-size: 14px;
   }
 
-  /* Header actions: Better mobile layout */
+  /* Header actions: Keep inline on mobile */
   .header-actions {
-    flex-wrap: wrap;
     gap: var(--space-2);
-    width: 100%;
-    justify-content: space-between;
   }
 
   /* Icon buttons: Increase to 44px minimum touch target */
