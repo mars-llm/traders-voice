@@ -54,6 +54,7 @@ let currentModel = modelSelect.value;
 let currentTradeInfo = null;
 let currentAudioBlob = null; // Store audio for replay
 let currentlyPlayingAudio = null; // Track playing audio element
+let tradeCardCollapsed = false; // Track collapsed state
 
 // Audio visualization state
 let audioContext = null;
@@ -365,7 +366,8 @@ async function transcribe(audioBlob) {
       transcription.textContent = text;
       resultSection.classList.add('visible');
 
-      // Extract and display trade info
+      // Extract and display trade info (reset to expanded state)
+      tradeCardCollapsed = false;
       const tradeInfo = extractTradeInfo(text);
       currentTradeInfo = tradeInfo;
       renderTradeCard(tradeInfo);
@@ -548,7 +550,7 @@ function renderTradeCard(trade) {
     pricesHtml += `
       <div class="trade-price-item entry">
         <span class="trade-price-label">Entry</span>
-        <span class="trade-price-value">$${formatNumber(trade.price)}</span>
+        <span class="trade-price-value copyable-value" data-copy="${trade.price}">$${formatNumber(trade.price)}</span>
       </div>`;
   }
 
@@ -557,7 +559,7 @@ function renderTradeCard(trade) {
     pricesHtml += `
       <div class="trade-price-item stop-loss">
         <span class="trade-price-label">Stop Loss</span>
-        <span class="trade-price-value">$${formatNumber(trade.stopLoss)}</span>
+        <span class="trade-price-value copyable-value" data-copy="${trade.stopLoss}">$${formatNumber(trade.stopLoss)}</span>
         ${slChange !== null ? `<span class="trade-price-change negative">${formatPercent(slChange)}</span>` : ''}
       </div>`;
   }
@@ -567,7 +569,7 @@ function renderTradeCard(trade) {
     pricesHtml += `
       <div class="trade-price-item take-profit">
         <span class="trade-price-label">Take Profit</span>
-        <span class="trade-price-value">$${formatNumber(trade.takeProfit)}</span>
+        <span class="trade-price-value copyable-value" data-copy="${trade.takeProfit}">$${formatNumber(trade.takeProfit)}</span>
         ${tpChange !== null ? `<span class="trade-price-change positive">${formatPercent(tpChange)}</span>` : ''}
       </div>`;
   }
@@ -578,7 +580,7 @@ function renderTradeCard(trade) {
     pricesHtml += `
       <div class="trade-price-item">
         <span class="trade-price-label">R:R Ratio</span>
-        <span class="trade-price-value">1:${rrRatio.toFixed(2)}</span>
+        <span class="trade-price-value copyable-value" data-copy="${rrRatio.toFixed(2)}">1:${rrRatio.toFixed(2)}</span>
       </div>`;
   }
 
@@ -589,7 +591,7 @@ function renderTradeCard(trade) {
     positionHtml += `
       <div class="trade-position-item">
         <span class="trade-position-label">Position Size</span>
-        <span class="trade-position-value">$${formatNumber(trade.positionSize)}</span>
+        <span class="trade-position-value copyable-value" data-copy="${trade.positionSize}">$${formatNumber(trade.positionSize)}</span>
       </div>`;
   }
 
@@ -598,7 +600,7 @@ function renderTradeCard(trade) {
     positionHtml += `
       <div class="trade-position-item">
         <span class="trade-position-label">Quantity</span>
-        <span class="trade-position-value">${formatNumber(trade.quantity)} ${ticker}</span>
+        <span class="trade-position-value copyable-value" data-copy="${trade.quantity}">${formatNumber(trade.quantity)} ${ticker}</span>
       </div>`;
   }
 
@@ -606,7 +608,7 @@ function renderTradeCard(trade) {
     positionHtml += `
       <div class="trade-position-item">
         <span class="trade-position-label">Leverage</span>
-        <span class="trade-position-value">${trade.leverage}x</span>
+        <span class="trade-position-value copyable-value" data-copy="${trade.leverage}">${trade.leverage}x</span>
       </div>`;
   }
 
@@ -634,24 +636,88 @@ function renderTradeCard(trade) {
 
   // Build the complete trade card
   tradeCard.innerHTML = `
-    <div class="trade-card-content">
+    <div class="trade-card-content ${tradeCardCollapsed ? 'trade-card-collapsed' : ''}">
       <div class="trade-card-header">
         <div class="trade-card-ticker-group">
-          ${trade.ticker ? `<div class="trade-card-ticker">${trade.ticker}</div>` : '<div class="trade-card-ticker">Trade</div>'}
+          ${trade.ticker ? `<div class="trade-card-ticker copyable-value" data-copy="${trade.ticker}">${trade.ticker}</div>` : '<div class="trade-card-ticker">Trade</div>'}
           ${metaBadges ? `<div class="trade-card-meta">${metaBadges}</div>` : ''}
         </div>
-        ${directionText ? `<div class="trade-card-direction ${directionClass}">${directionText}</div>` : ''}
+        <div class="trade-card-header-actions">
+          ${directionText ? `<div class="trade-card-direction ${directionClass}">${directionText}</div>` : ''}
+          <button class="trade-card-collapse-btn" title="${tradeCardCollapsed ? 'Expand' : 'Collapse'}">${tradeCardCollapsed ? '▶' : '▼'}</button>
+        </div>
       </div>
-      ${pricesHtml ? `<div class="trade-card-prices">${pricesHtml}</div>` : ''}
-      ${positionHtml ? `<div class="trade-card-position">${positionHtml}</div>` : ''}
-      ${indicatorsHtml}
-      ${chartHtml}
-      <div class="trade-summary">${generateTradeSummary(trade)}</div>
+      <div class="trade-card-body">
+        ${pricesHtml ? `<div class="trade-card-prices">${pricesHtml}</div>` : ''}
+        ${positionHtml ? `<div class="trade-card-position">${positionHtml}</div>` : ''}
+        ${indicatorsHtml}
+        ${chartHtml}
+        <div class="trade-summary">${generateTradeSummary(trade)}</div>
+      </div>
     </div>
   `;
 
   tradeCard.classList.add('visible');
 }
+
+/**
+ * Handle clicks on copyable values and collapse button in trade cards
+ */
+tradeCard.addEventListener('click', async (e) => {
+  // Handle collapse button
+  if (e.target.classList.contains('trade-card-collapse-btn')) {
+    tradeCardCollapsed = !tradeCardCollapsed;
+    renderTradeCard(currentTradeInfo);
+    return;
+  }
+
+  // Handle copyable values
+  const copyableEl = e.target.closest('.copyable-value');
+  if (!copyableEl) return;
+
+  const value = copyableEl.dataset.copy;
+  if (!value) return;
+
+  try {
+    await navigator.clipboard.writeText(value);
+
+    // Show visual feedback
+    const originalText = copyableEl.textContent;
+    copyableEl.style.opacity = '0.6';
+
+    // Create a tooltip
+    const tooltip = document.createElement('div');
+    tooltip.textContent = 'Copied!';
+    tooltip.style.cssText = `
+      position: absolute;
+      background: var(--success);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      pointer-events: none;
+      z-index: 1000;
+      animation: fadeInOut 1s ease;
+    `;
+
+    // Position tooltip near the clicked element
+    const rect = copyableEl.getBoundingClientRect();
+    tooltip.style.left = `${rect.left + rect.width / 2}px`;
+    tooltip.style.top = `${rect.top - 30}px`;
+    tooltip.style.transform = 'translateX(-50%)';
+
+    document.body.appendChild(tooltip);
+
+    // Reset after delay
+    setTimeout(() => {
+      copyableEl.style.opacity = '';
+      tooltip.remove();
+    }, 1000);
+  } catch (err) {
+    console.error('Failed to copy:', err);
+  }
+});
 
 // ============================================
 // SAVED NOTES FUNCTIONALITY
@@ -1087,6 +1153,8 @@ const helpModalBody = `
       <li>Mention the exchange: <strong>Binance, Coinbase, Kraken</strong></li>
       <li>Include timeframes: <strong>1-hour, 4-hour, daily</strong></li>
       <li>Name indicators: <strong>RSI, MACD, EMA, VWAP</strong></li>
+      <li>Foreign languages are supported — spoken content will be transcribed and translated to English</li>
+      <li>The Space key starts/stops recording. If it doesn't respond, click elsewhere first to remove focus from dropdowns or buttons.</li>
     </ul>
   </div>
 `;

@@ -430,6 +430,43 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+.trade-card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.trade-card-collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-base);
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease);
+  font-size: 10px;
+}
+
+.trade-card-collapse-btn:hover {
+  color: var(--fg-primary);
+  background: var(--bg-hover);
+  border-color: var(--border-focus);
+}
+
+/* Collapsed state */
+.trade-card-content.trade-card-collapsed .trade-card-header {
+  border-bottom: none;
+}
+
+.trade-card-content.trade-card-collapsed .trade-card-body {
+  display: none;
+}
+
 .trade-card-ticker-group {
   display: flex;
   flex-direction: column;
@@ -625,6 +662,40 @@ body {
   font-size: 12px;
   color: var(--fg-muted);
   line-height: 1.6;
+}
+
+/* Copyable Values */
+.copyable-value {
+  cursor: pointer;
+  transition: opacity var(--duration-fast) var(--ease);
+  position: relative;
+}
+
+.copyable-value:hover {
+  opacity: 0.8;
+}
+
+.copyable-value:active {
+  opacity: 0.6;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
+  }
+  20% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-5px);
+  }
 }
 
 /* Legacy support for old structure */
