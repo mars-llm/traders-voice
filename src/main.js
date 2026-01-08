@@ -8,6 +8,21 @@
 import { pipeline, env } from '@huggingface/transformers';
 import { extractTradeInfo, generateTradeSummary } from './tradeExtractor.js';
 import { createPriceLevelChart } from './priceLevelChart.js';
+import {
+  MAX_SAVED_NOTES,
+  STORAGE_KEY,
+  blobToBase64,
+  base64ToBlob,
+  formatTimestamp,
+  escapeHtml,
+  formatNumber as formatSavedNoteNumber,
+  formatNoteForClipboard,
+  renderSavedNoteTrade,
+  loadSavedNotes,
+  saveSavedNotes,
+  canSaveNote,
+  createNote,
+} from './savedNotes.js';
 
 // Disable local model loading (use Hugging Face CDN)
 env.allowLocalModels = false;
@@ -46,9 +61,7 @@ const savedNotesSection = document.getElementById('savedNotesSection');
 const savedNotesList = document.getElementById('savedNotesList');
 const clearAllNotesBtn = document.getElementById('clearAllNotesBtn');
 
-// Constants
-const MAX_SAVED_NOTES = 10;
-const STORAGE_KEY = 'traders-voice-notes';
+// Note: MAX_SAVED_NOTES and STORAGE_KEY are imported from savedNotes.js
 
 // Load saved model preference
 const savedModel = localStorage.getItem('traders-voice-model');
@@ -755,31 +768,7 @@ tradeCard.addEventListener('click', async (e) => {
 // SAVED NOTES FUNCTIONALITY
 // ============================================
 
-/**
- * Convert a Blob to base64 string
- */
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
-/**
- * Convert base64 string back to Blob
- */
-function base64ToBlob(base64) {
-  const parts = base64.split(',');
-  const mime = parts[0].match(/:(.*?);/)[1];
-  const binary = atob(parts[1]);
-  const array = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    array[i] = binary.charCodeAt(i);
-  }
-  return new Blob([array], { type: mime });
-}
+// Note: blobToBase64 and base64ToBlob are imported from savedNotes.js
 
 /**
  * Play audio from a saved note
@@ -865,96 +854,8 @@ function stopAudio() {
   }
 }
 
-/**
- * Load saved notes from localStorage
- */
-function loadSavedNotes() {
-  try {
-    const notes = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    return Array.isArray(notes) ? notes : [];
-  } catch {
-    return [];
-  }
-}
-
-/**
- * Save notes to localStorage
- */
-function saveSavedNotes(notes) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-}
-
-/**
- * Format timestamp for display
- */
-function formatTimestamp(timestamp) {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const isToday = date.toDateString() === now.toDateString();
-
-  const timeStr = date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
-
-  if (isToday) {
-    return `Today at ${timeStr}`;
-  }
-
-  const dateStr = date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
-
-  return `${dateStr} at ${timeStr}`;
-}
-
-/**
- * Render a single saved note's trade info
- */
-function renderSavedNoteTrade(trade) {
-  if (!trade) return '';
-
-  const actionClass = trade.action || '';
-  const actionText = trade.action ? trade.action.toUpperCase() : '';
-
-  let detailsHtml = '';
-
-  const addDetail = (label, value) => {
-    detailsHtml += `
-      <div class="saved-note-trade-detail">
-        <span class="saved-note-trade-detail-label">${label}:</span>
-        <span class="saved-note-trade-detail-value">${value}</span>
-      </div>`;
-  };
-
-  if (trade.positionSize) addDetail('Size', `$${formatNumber(trade.positionSize)}`);
-  if (trade.quantity) addDetail('Qty', trade.quantity.toLocaleString());
-  if (trade.price) addDetail('Price', `$${formatNumber(trade.price)}`);
-  if (trade.stopLoss) addDetail('SL', `$${formatNumber(trade.stopLoss)}`);
-  if (trade.takeProfit) addDetail('TP', `$${formatNumber(trade.takeProfit)}`);
-
-  // Generate price chart for saved notes
-  let chartHtml = '';
-  if (trade.price && trade.stopLoss && trade.takeProfit && trade.action) {
-    const chartSvg = createPriceLevelChart(trade);
-    if (chartSvg) {
-      chartHtml = `<div class="price-chart-container">${chartSvg}</div>`;
-    }
-  }
-
-  return `
-    <div class="saved-note-trade">
-      <div class="saved-note-trade-header">
-        ${trade.ticker ? `<span class="saved-note-trade-ticker">${trade.ticker}</span>` : '<span></span>'}
-        ${actionText ? `<span class="saved-note-trade-action ${actionClass}">${actionText}</span>` : ''}
-      </div>
-      ${detailsHtml ? `<div class="saved-note-trade-details">${detailsHtml}</div>` : ''}
-      ${chartHtml}
-    </div>
-  `;
-}
+// Note: loadSavedNotes, saveSavedNotes, formatTimestamp, renderSavedNoteTrade
+// are imported from savedNotes.js
 
 /**
  * Render all saved notes
@@ -989,14 +890,7 @@ function renderSavedNotes() {
     .join('');
 }
 
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+// Note: escapeHtml is imported from savedNotes.js
 
 /**
  * Save current note with audio
@@ -1010,9 +904,10 @@ async function saveCurrentNote() {
 
   const notes = loadSavedNotes();
 
-  // Check limit
-  if (notes.length >= MAX_SAVED_NOTES) {
-    showError(`Maximum ${MAX_SAVED_NOTES} notes reached. Delete some to save more.`);
+  // Check limit using imported function
+  const validation = canSaveNote(notes);
+  if (!validation.valid) {
+    showError(validation.error);
     return;
   }
 
@@ -1026,14 +921,13 @@ async function saveCurrentNote() {
     }
   }
 
-  // Add new note at the beginning
-  notes.unshift({
-    id: Date.now(),
-    timestamp: Date.now(),
-    text: text,
+  // Create and add new note at the beginning
+  const newNote = createNote({
+    text,
     trade: currentTradeInfo,
-    audioData: audioData,
+    audioData,
   });
+  notes.unshift(newNote);
 
   saveSavedNotes(notes);
   renderSavedNotes();
@@ -1061,20 +955,7 @@ async function copySavedNote(index) {
   const note = notes[index];
   if (!note) return;
 
-  let copyText = note.text;
-
-  // Add trade info if available
-  if (note.trade) {
-    copyText += '\n\n--- Trade Info ---\n';
-    if (note.trade.ticker) copyText += `Ticker: ${note.trade.ticker}\n`;
-    if (note.trade.action) copyText += `Action: ${note.trade.action.toUpperCase()}\n`;
-    if (note.trade.positionSize) copyText += `Position Size: $${formatNumber(note.trade.positionSize)}\n`;
-    if (note.trade.quantity) copyText += `Quantity: ${note.trade.quantity}\n`;
-    if (note.trade.price) copyText += `Price: $${formatNumber(note.trade.price)}\n`;
-    if (note.trade.stopLoss) copyText += `Stop Loss: $${formatNumber(note.trade.stopLoss)}\n`;
-    if (note.trade.takeProfit) copyText += `Take Profit: $${formatNumber(note.trade.takeProfit)}\n`;
-  }
-
+  const copyText = formatNoteForClipboard(note);
   await navigator.clipboard.writeText(copyText);
 
   // Visual feedback

@@ -17,6 +17,7 @@
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
     "coi-serviceworker": "^0.1.7",
+    "jsdom": "^27.4.0",
     "sharp": "^0.34.5",
     "vite": "^6.0.0",
     "vite-plugin-pwa": "^1.2.0",

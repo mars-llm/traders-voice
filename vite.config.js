@@ -10,6 +10,9 @@ export default defineConfig({
     emptyOutDir: true,
     target: 'es2020',
   },
+  test: {
+    environment: 'jsdom',
+  },
   server: {
     port: 5174,
     strictPort: true,
