@@ -12,6 +12,19 @@ import { createPriceLevelChart } from './priceLevelChart.js';
 // Disable local model loading (use Hugging Face CDN)
 env.allowLocalModels = false;
 
+// Check for SharedArrayBuffer availability (required for ONNX/Whisper)
+if (typeof SharedArrayBuffer === 'undefined') {
+  console.error('SharedArrayBuffer not available. COOP/COEP headers may not be set.');
+  // Show error after DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    const errorEl = document.getElementById('errorMsg');
+    if (errorEl) {
+      errorEl.textContent = 'Browser security headers not configured. Try reloading the page.';
+      errorEl.classList.add('visible');
+    }
+  });
+}
+
 // DOM Elements
 const recordBtn = document.getElementById('recordBtn');
 const statusText = document.getElementById('statusText');

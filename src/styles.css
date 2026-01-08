@@ -148,20 +148,21 @@ body {
 /* Model Selector - Crafted Control */
 .model-selector {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-1);
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .model-select {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-3);
+  padding: 5px var(--space-3);
   color: var(--fg-secondary);
   font-size: 13px;
   cursor: pointer;
   transition: border-color var(--duration-fast) var(--ease);
+  height: 28px;
 }
 
 .model-select:hover {
@@ -177,6 +178,7 @@ body {
   font-size: 11px;
   color: var(--fg-faint);
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 /* Record Section */
@@ -1053,8 +1055,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -1062,7 +1064,7 @@ body {
   color: var(--fg-muted);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -1527,8 +1529,9 @@ body {
 
   .model-select {
     width: 100%;
-    padding: var(--space-2) var(--space-2);
+    padding: 5px var(--space-2);
     font-size: 11px;
+    height: 28px;
   }
 
   .model-info {

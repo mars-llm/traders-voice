@@ -3,7 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <!-- Enable SharedArrayBuffer on GitHub Pages (required for ONNX/Whisper) -->
-  <script src="coi-serviceworker.js"></script>
+  <script>
+    // Load coi-serviceworker with correct base path
+    (function() {
+      var base = document.querySelector('base')?.href || location.pathname.replace(/\/[^\/]*$/, '/');
+      if (!base.endsWith('/')) base += '/';
+      var script = document.createElement('script');
+      script.src = base + 'coi-serviceworker.js';
+      script.onerror = function() { console.warn('coi-serviceworker.js failed to load'); };
+      document.head.appendChild(script);
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Traders Voice - Local Speech-to-Text</title>
 
