@@ -58,11 +58,15 @@
   padding: 0;
 }
 
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg-base);
   color: var(--fg-secondary);
-  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -100,6 +104,10 @@ body {
 
 .logo {
   flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
 }
 
 .header h1 {
@@ -935,26 +943,29 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-elevated);
-  color: var(--fg-muted);
+  color: var(--fg-secondary);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease);
 }
 
 .icon-btn:hover {
   border-color: var(--border-focus);
-  color: var(--fg-secondary);
+  color: var(--fg-primary);
   background: var(--bg-hover);
 }
 
 .icon-btn svg {
   flex-shrink: 0;
   display: block;
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
 }
 
 /* Footer - Privacy First */

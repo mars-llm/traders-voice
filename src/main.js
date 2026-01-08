@@ -1100,11 +1100,12 @@ const aboutModalBody = `
 
   <div class="about-section">
     <h3>How it works</h3>
-    <p>Powered by <strong>OpenAI Whisper</strong> running entirely in your browser via WebAssembly. The AI model is downloaded once and cached locally.</p>
+    <p>Powered by <a href="https://openai.com/research/whisper" target="_blank" rel="noopener">OpenAI Whisper</a> running entirely in your browser via WebAssembly. The AI model is downloaded once and cached locally.</p>
     <ul class="tech-list">
-      <li><strong>Whisper AI</strong> - State-of-the-art speech recognition</li>
-      <li><strong>WebAssembly</strong> - Near-native performance in browser</li>
-      <li><strong>Transformers.js</strong> - ML inference library by Hugging Face</li>
+      <li><a href="https://openai.com/research/whisper" target="_blank" rel="noopener">Whisper AI</a> - State-of-the-art speech recognition by OpenAI</li>
+      <li><a href="https://huggingface.co/docs/transformers.js" target="_blank" rel="noopener">Transformers.js</a> - ML inference library by Hugging Face</li>
+      <li><a href="https://onnxruntime.ai/" target="_blank" rel="noopener">ONNX Runtime</a> - Cross-platform ML inference via WebAssembly</li>
+      <li><a href="https://vitejs.dev/" target="_blank" rel="noopener">Vite</a> - Fast build tool and development server</li>
     </ul>
   </div>
 

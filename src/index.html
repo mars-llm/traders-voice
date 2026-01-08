@@ -28,14 +28,7 @@
   <div class="container">
     <div class="header">
       <div class="header-brand">
-        <svg class="logo" width="40" height="40" viewBox="0 0 40 40" fill="none">
-          <rect x="16" y="8" width="8" height="14" rx="4" fill="#3b82f6"/>
-          <path d="M20 22 L20 28" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
-          <path d="M14 28 L26 28" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
-          <path d="M12 18 C12 21.3137 15.6863 24 20 24 C24.3137 24 28 21.3137 28 18" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" fill="none"/>
-          <path d="M4 14 L6 12 L8 16 L10 10 L12 14" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/>
-          <path d="M28 14 L30 16 L32 10 L34 12 L36 14" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/>
-        </svg>
+        <img src="/favicon-32.png" alt="Traders Voice" class="logo" width="32" height="32">
         <h1>Traders Voice</h1>
       </div>
       <div class="header-actions">
@@ -57,11 +50,13 @@
           <select class="model-select" id="modelSelect">
             <optgroup label="English">
               <option value="Xenova/whisper-small.en">small.en (244MB) - Best</option>
-              <option value="Xenova/whisper-base.en" selected>base.en (77MB) - Fast</option>
+              <option value="Xenova/whisper-base.en" selected>base.en (77MB) - Balanced</option>
+              <option value="Xenova/whisper-tiny.en">tiny.en (41MB) - Fastest</option>
             </optgroup>
             <optgroup label="Multilingual">
               <option value="Xenova/whisper-small">small (244MB) - Best</option>
-              <option value="Xenova/whisper-base">base (75MB) - Fast</option>
+              <option value="Xenova/whisper-base">base (75MB) - Balanced</option>
+              <option value="Xenova/whisper-tiny">tiny (39MB) - Fastest</option>
             </optgroup>
           </select>
           <div class="model-info" id="modelInfo">English only</div>
