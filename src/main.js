@@ -67,6 +67,7 @@ let currentModel = modelSelect.value;
 let currentTradeInfo = null;
 let currentAudioBlob = null; // Store audio for replay
 let currentlyPlayingAudio = null; // Track playing audio element
+let currentAudioURL = null; // Track blob URL to prevent memory leaks
 let tradeCardCollapsed = false; // Track collapsed state
 
 // Audio visualization state
@@ -113,6 +114,20 @@ function showError(msg) {
   errorMsg.textContent = msg;
   errorMsg.classList.add('visible');
   setTimeout(() => errorMsg.classList.remove('visible'), 5000);
+}
+
+/**
+ * Update .has-content class on right panel (fallback for browsers without :has() support)
+ */
+function updateRightPanelContent() {
+  const rightPanel = document.querySelector('.right-panel');
+  if (!rightPanel) return;
+
+  const hasContent = progressSection.classList.contains('visible') ||
+                     resultSection.classList.contains('visible') ||
+                     tradeCard.classList.contains('visible');
+
+  rightPanel.classList.toggle('has-content', hasContent);
 }
 
 /**
@@ -245,6 +260,7 @@ function setState(state) {
       stopWaveformVisualization();
       break;
   }
+  updateRightPanelContent();
 }
 
 /**
@@ -538,6 +554,7 @@ function renderTradeCard(trade) {
   if (!trade) {
     tradeCard.classList.remove('visible');
     tradeCard.innerHTML = '';
+    updateRightPanelContent();
     return;
   }
 
@@ -671,6 +688,7 @@ function renderTradeCard(trade) {
   `;
 
   tradeCard.classList.add('visible');
+  updateRightPanelContent();
 }
 
 /**
@@ -679,6 +697,7 @@ function renderTradeCard(trade) {
 tradeCard.addEventListener('click', async (e) => {
   // Handle collapse button
   if (e.target.classList.contains('trade-card-collapse-btn')) {
+    if (!currentTradeInfo) return;
     tradeCardCollapsed = !tradeCardCollapsed;
     renderTradeCard(currentTradeInfo);
     return;
@@ -702,7 +721,7 @@ tradeCard.addEventListener('click', async (e) => {
     const tooltip = document.createElement('div');
     tooltip.textContent = 'Copied!';
     tooltip.style.cssText = `
-      position: absolute;
+      position: fixed;
       background: var(--success);
       color: white;
       padding: 4px 8px;
@@ -773,7 +792,7 @@ function playNoteAudio(index) {
     return;
   }
 
-  // Stop any currently playing audio
+  // Stop any currently playing audio and revoke previous URL
   if (currentlyPlayingAudio) {
     currentlyPlayingAudio.pause();
     currentlyPlayingAudio = null;
@@ -783,9 +802,14 @@ function playNoteAudio(index) {
       btn.classList.remove('playing');
     });
   }
+  if (currentAudioURL) {
+    URL.revokeObjectURL(currentAudioURL);
+    currentAudioURL = null;
+  }
 
   const blob = base64ToBlob(note.audioData);
   const url = URL.createObjectURL(blob);
+  currentAudioURL = url; // Track for cleanup
   const audio = new Audio(url);
 
   const playBtn = savedNotesList.querySelector(`[data-index="${index}"] .play-btn`);
@@ -800,6 +824,7 @@ function playNoteAudio(index) {
   audio.onended = () => {
     URL.revokeObjectURL(url);
     currentlyPlayingAudio = null;
+    currentAudioURL = null;
     if (playBtn) {
       playBtn.textContent = '▶';
       playBtn.classList.remove('playing');
@@ -809,6 +834,7 @@ function playNoteAudio(index) {
   audio.onerror = () => {
     URL.revokeObjectURL(url);
     currentlyPlayingAudio = null;
+    currentAudioURL = null;
     showError('Failed to play audio');
     if (playBtn) {
       playBtn.textContent = '▶';
@@ -831,6 +857,11 @@ function stopAudio() {
       btn.textContent = '▶';
       btn.classList.remove('playing');
     });
+  }
+  // Revoke blob URL to prevent memory leak
+  if (currentAudioURL) {
+    URL.revokeObjectURL(currentAudioURL);
+    currentAudioURL = null;
   }
 }
 

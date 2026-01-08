@@ -1412,6 +1412,8 @@ body {
 }
 
 /* Hide empty state when results are showing */
+/* Use .has-content class for broader browser support (JS fallback) */
+.right-panel.has-content .empty-state,
 .right-panel:has(.visible) .empty-state,
 .right-panel:has(.progress-section.visible) .empty-state {
   display: none;
