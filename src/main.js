@@ -1012,3 +1012,191 @@ savedNotesList.addEventListener('click', (e) => {
 
 // Initialize saved notes on page load
 renderSavedNotes();
+
+// ============================================
+// MODAL FUNCTIONALITY
+// ============================================
+
+/**
+ * Create a modal element with given title and body content
+ */
+function createModal(id, title, bodyHtml) {
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.id = id;
+  modal.innerHTML = `
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>${title}</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">${bodyHtml}</div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // Wire up close handlers
+  const closeBtn = modal.querySelector('.modal-close');
+  const backdrop = modal.querySelector('.modal-backdrop');
+  closeBtn.addEventListener('click', () => closeModal(modal));
+  backdrop.addEventListener('click', () => closeModal(modal));
+
+  return modal;
+}
+
+/**
+ * Open a modal
+ */
+function openModal(modal) {
+  modal.classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Close a modal
+ */
+function closeModal(modal) {
+  modal.classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+// Help modal content
+const helpModalBody = `
+  <p class="modal-intro">Speak naturally. Here are some example phrases that work well:</p>
+
+  <div class="example-group">
+    <h3>Crypto Trades</h3>
+    <div class="example">"Long Bitcoin at 95,000, stop loss 92,000, take profit 105,000"</div>
+    <div class="example">"Short Ethereum on Binance, entry 3,200, target 2,800"</div>
+    <div class="example">"Buy Solana, watching the 4-hour chart, RSI oversold"</div>
+  </div>
+
+  <div class="example-group">
+    <h3>Stock Trades</h3>
+    <div class="example">"Buy 100 shares of Apple at 180, stop at 175"</div>
+    <div class="example">"Sell Tesla, take profit at 250, MACD crossing down"</div>
+  </div>
+
+  <div class="example-group">
+    <h3>Tips for Better Recognition</h3>
+    <ul class="tips-list">
+      <li>Speak clearly and at a moderate pace</li>
+      <li>Say numbers digit by digit for prices (e.g., "ninety-five thousand")</li>
+      <li>Use keywords: <strong>buy, sell, long, short, stop loss, take profit, target</strong></li>
+      <li>Mention the exchange: <strong>Binance, Coinbase, Kraken</strong></li>
+      <li>Include timeframes: <strong>1-hour, 4-hour, daily</strong></li>
+      <li>Name indicators: <strong>RSI, MACD, EMA, VWAP</strong></li>
+    </ul>
+  </div>
+`;
+
+// About modal content
+const aboutModalBody = `
+  <div class="about-section">
+    <h3>What is this?</h3>
+    <p>A voice-to-text tool designed for traders. Record your trade ideas, and the app automatically extracts key information like tickers, prices, stop losses, and indicators.</p>
+  </div>
+
+  <div class="about-section">
+    <h3>How it works</h3>
+    <p>Powered by <strong>OpenAI Whisper</strong> running entirely in your browser via WebAssembly. The AI model is downloaded once and cached locally.</p>
+    <ul class="tech-list">
+      <li><strong>Whisper AI</strong> - State-of-the-art speech recognition</li>
+      <li><strong>WebAssembly</strong> - Near-native performance in browser</li>
+      <li><strong>Transformers.js</strong> - ML inference library by Hugging Face</li>
+    </ul>
+  </div>
+
+  <div class="about-section privacy-section">
+    <h3>Privacy First</h3>
+    <div class="privacy-badges">
+      <div class="privacy-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span>100% Local Processing</span>
+      </div>
+      <div class="privacy-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+        </svg>
+        <span>No Data Sent to Servers</span>
+      </div>
+      <div class="privacy-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span>No Tracking or Analytics</span>
+      </div>
+      <div class="privacy-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+        </svg>
+        <span>No Cookies</span>
+      </div>
+    </div>
+    <p class="privacy-note">Your audio never leaves your device. All speech recognition happens locally using your CPU/GPU.</p>
+  </div>
+
+  <div class="about-section">
+    <h3>Open Source</h3>
+    <p>This project is free and open source. Contributions welcome!</p>
+  </div>
+`;
+
+// Create modals on page load
+const helpModal = createModal('helpModal', 'Examples & Tips', helpModalBody);
+const aboutModal = createModal('aboutModal', 'About Traders Voice', aboutModalBody);
+
+// Wire up trigger buttons
+const helpBtn = document.getElementById('helpBtn');
+const aboutBtn = document.getElementById('aboutBtn');
+
+helpBtn.addEventListener('click', () => openModal(helpModal));
+aboutBtn.addEventListener('click', () => openModal(aboutModal));
+
+// Close modals with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (helpModal.classList.contains('visible')) {
+      closeModal(helpModal);
+    }
+    if (aboutModal.classList.contains('visible')) {
+      closeModal(aboutModal);
+    }
+  }
+});
+
+// ============================================================================
+// PWA Installation Handling
+// ============================================================================
+
+let deferredPwaPrompt = null;
+
+// Capture the PWA install prompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent the mini-infobar from appearing on mobile
+  e.preventDefault();
+  // Store the event for later use
+  deferredPwaPrompt = e;
+  // Show install button/banner if desired
+  console.log('PWA install prompt available');
+});
+
+// Handle successful installation
+window.addEventListener('appinstalled', () => {
+  console.log('PWA installed successfully');
+  deferredPwaPrompt = null;
+});
+
+// Service Worker registration (handled by vite-plugin-pwa)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    // Service worker will be registered automatically by vite-plugin-pwa
+    console.log('PWA ready');
+  });
+}

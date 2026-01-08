@@ -5,16 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node create-icons.mjs && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "generate-icons": "node create-icons.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.5.1"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "sharp": "^0.34.5",
     "vite": "^6.0.0",
+    "vite-plugin-pwa": "^1.2.0",
     "vitest": "^2.1.0"
   },
   "engines": {

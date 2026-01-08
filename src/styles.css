@@ -26,6 +26,7 @@
   /* Semantic Colors */
   --accent: #3b82f6;
   --accent-hover: #2563eb;
+  --accent-muted: rgba(59, 130, 246, 0.15);
   --success: #22c55e;
   --success-muted: #166534;
   --error: #ef4444;
@@ -921,4 +922,565 @@ body {
 
 .github-link:hover svg {
   opacity: 0.8;
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease);
+}
+
+.icon-btn:hover {
+  border-color: var(--border-focus);
+  color: var(--fg-secondary);
+  background: var(--bg-hover);
+}
+
+.icon-btn svg {
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Footer - Privacy First */
+.footer {
+  padding: var(--space-4);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.footer-privacy {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 11px;
+  color: var(--fg-faint);
+}
+
+.footer-privacy svg {
+  opacity: 0.6;
+}
+
+.footer-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--fg-faint);
+  opacity: 0.4;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-normal) var(--ease);
+}
+
+.modal.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95) translateY(10px);
+  transition: transform var(--duration-normal) var(--ease);
+}
+
+.modal.visible .modal-content {
+  transform: scale(1) translateY(0);
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  letter-spacing: -0.01em;
+}
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease);
+}
+
+.modal-close:hover {
+  background: var(--bg-hover);
+  color: var(--fg-primary);
+}
+
+.modal-body {
+  padding: var(--space-5);
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.modal-intro {
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-bottom: var(--space-5);
+  line-height: 1.5;
+}
+
+/* Example Groups */
+.example-group {
+  margin-bottom: var(--space-5);
+}
+
+.example-group h3 {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+}
+
+.example {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: 13px;
+  color: var(--fg-secondary);
+  margin-bottom: var(--space-2);
+  line-height: 1.5;
+}
+
+.tips-list {
+  list-style: none;
+  padding: 0;
+}
+
+.tips-list li {
+  font-size: 13px;
+  color: var(--fg-secondary);
+  padding: var(--space-2) 0;
+  padding-left: var(--space-4);
+  position: relative;
+  line-height: 1.5;
+}
+
+.tips-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.tips-list strong {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* About Section */
+.about-section {
+  margin-bottom: var(--space-5);
+}
+
+.about-section:last-child {
+  margin-bottom: 0;
+}
+
+.about-section h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  margin-bottom: var(--space-2);
+}
+
+.about-section p {
+  font-size: 13px;
+  color: var(--fg-muted);
+  line-height: 1.6;
+  margin-bottom: var(--space-2);
+}
+
+.tech-list {
+  list-style: none;
+  padding: 0;
+  margin-top: var(--space-3);
+}
+
+.tech-list li {
+  font-size: 12px;
+  color: var(--fg-secondary);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+}
+
+.tech-list strong {
+  color: var(--accent);
+}
+
+/* Privacy Badges */
+.privacy-section {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.privacy-section h3 {
+  margin-bottom: var(--space-3);
+}
+
+.privacy-badges {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.privacy-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 11px;
+  color: var(--fg-muted);
+  padding: var(--space-2);
+}
+
+.privacy-badge svg {
+  color: var(--success);
+  flex-shrink: 0;
+}
+
+.privacy-note {
+  font-size: 12px;
+  color: var(--fg-faint);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ============================================
+ * MOBILE RESPONSIVE
+ * ============================================ */
+
+@media (max-width: 480px) {
+  /* Reduce body padding on small screens */
+  body {
+    padding: var(--space-3);
+  }
+
+  /* Header: Better wrapping and spacing */
+  .header {
+    padding: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .header-brand {
+    gap: var(--space-2);
+  }
+
+  .header h1 {
+    font-size: 14px;
+  }
+
+  /* Header actions: Better mobile layout */
+  .header-actions {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Icon buttons: Increase to 44px minimum touch target */
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .icon-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Model selector: Full width on mobile */
+  .model-selector {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .model-select {
+    width: 100%;
+    padding: var(--space-3) var(--space-3);
+    font-size: 12px;
+  }
+
+  .model-info {
+    text-align: left;
+  }
+
+  /* Record section: Adjust spacing */
+  .record-section {
+    padding: var(--space-6) var(--space-3);
+    min-height: 140px;
+    gap: var(--space-3);
+  }
+
+  /* Record button: Larger for easier tapping */
+  .record-btn {
+    width: 88px;
+    height: 88px;
+  }
+
+  .record-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .record-btn.recording .record-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Status text */
+  .status-text {
+    font-size: 13px;
+  }
+
+  .duration {
+    font-size: 22px;
+  }
+
+  /* Result section */
+  .result-section {
+    padding: var(--space-4);
+  }
+
+  /* Result actions: Better button wrapping */
+  .result-actions {
+    flex-wrap: wrap;
+  }
+
+  .result-actions .btn {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  /* Trade card: Responsive padding and layout */
+  .trade-card.visible {
+    padding: var(--space-4);
+  }
+
+  .trade-card-header {
+    padding: var(--space-3);
+  }
+
+  .trade-card-ticker {
+    font-size: 18px;
+  }
+
+  /* Trade prices: Single column on mobile */
+  .trade-card-prices {
+    grid-template-columns: 1fr;
+  }
+
+  .trade-price-item {
+    padding: var(--space-3);
+  }
+
+  .trade-price-value {
+    font-size: 15px;
+  }
+
+  /* Trade position: Single column */
+  .trade-card-position {
+    padding: var(--space-3);
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  /* Saved notes */
+  .saved-notes-section {
+    padding: var(--space-4);
+  }
+
+  .saved-note {
+    padding: var(--space-3);
+  }
+
+  /* Footer: Stack vertically on mobile */
+  .footer {
+    padding: var(--space-3);
+    gap: var(--space-2);
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-privacy {
+    font-size: 10px;
+    flex-wrap: wrap;
+  }
+
+  .github-link {
+    font-size: 11px;
+  }
+
+  /* Hint */
+  .hint {
+    padding: var(--space-3);
+    font-size: 11px;
+  }
+
+  /* Modal */
+  .modal {
+    padding: var(--space-3);
+  }
+
+  .modal-content {
+    max-height: 90vh;
+  }
+
+  .modal-header {
+    padding: var(--space-3);
+  }
+
+  .modal-body {
+    padding: var(--space-4);
+  }
+
+  /* Privacy badges: Stack on mobile */
+  .privacy-badges {
+    grid-template-columns: 1fr;
+  }
+
+  /* Progress section */
+  .progress-section {
+    padding: var(--space-3);
+  }
+
+  /* Error message */
+  .error-msg {
+    margin: var(--space-3);
+    margin-top: 0;
+  }
+}
+
+/* Extra small screens (≤380px) */
+@media (max-width: 380px) {
+  /* Tighter spacing */
+  body {
+    padding: var(--space-2);
+  }
+
+  .header {
+    padding: var(--space-2);
+  }
+
+  .header h1 {
+    font-size: 13px;
+  }
+
+  .logo {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Icon buttons: Still maintain 44px minimum */
+  .header-actions {
+    gap: var(--space-1);
+  }
+
+  /* Record button: Adjust for very small screens */
+  .record-btn {
+    width: 76px;
+    height: 76px;
+  }
+
+  .record-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .record-btn.recording .record-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Footer: Prevent awkward wrapping */
+  .footer-privacy span {
+    white-space: nowrap;
+  }
 }

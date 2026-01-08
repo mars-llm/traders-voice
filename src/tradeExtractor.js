@@ -22,10 +22,14 @@ const CRYPTO_TOKENS = [
   'BNB', 'XMR',
 ];
 
-// Crypto name to ticker mapping
+// Crypto name to ticker mapping (including common Whisper mishearings)
 const CRYPTO_NAME_TO_TICKER = {
   'BITCOIN': 'BTC',
+  'GOOD COIN': 'BTC',  // Common Whisper mishearing of "Bitcoin"
+  'BIT COIN': 'BTC',
   'ETHEREUM': 'ETH',
+  'ETHER': 'ETH',
+  'ETHERIUM': 'ETH',  // Common misspelling
   'SOLANA': 'SOL',
   'CARDANO': 'ADA',
   'DOGECOIN': 'DOGE',
