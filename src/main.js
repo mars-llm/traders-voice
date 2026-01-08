@@ -52,6 +52,8 @@ let transcriber = null;
 let isProcessing = false;
 let currentModel = modelSelect.value;
 let currentTradeInfo = null;
+let currentAudioBlob = null; // Store audio for replay
+let currentlyPlayingAudio = null; // Track playing audio element
 
 // Audio visualization state
 let audioContext = null;
@@ -410,6 +412,7 @@ async function startRecording() {
 
       if (audioChunks.length > 0) {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        currentAudioBlob = audioBlob; // Store for replay
         await transcribe(audioBlob);
       }
     };
@@ -655,6 +658,104 @@ function renderTradeCard(trade) {
 // ============================================
 
 /**
+ * Convert a Blob to base64 string
+ */
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Convert base64 string back to Blob
+ */
+function base64ToBlob(base64) {
+  const parts = base64.split(',');
+  const mime = parts[0].match(/:(.*?);/)[1];
+  const binary = atob(parts[1]);
+  const array = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    array[i] = binary.charCodeAt(i);
+  }
+  return new Blob([array], { type: mime });
+}
+
+/**
+ * Play audio from a saved note
+ */
+function playNoteAudio(index) {
+  const notes = loadSavedNotes();
+  const note = notes[index];
+  if (!note || !note.audioData) {
+    showError('No audio available for this note');
+    return;
+  }
+
+  // Stop any currently playing audio
+  if (currentlyPlayingAudio) {
+    currentlyPlayingAudio.pause();
+    currentlyPlayingAudio = null;
+    // Reset all play buttons
+    document.querySelectorAll('.play-btn').forEach(btn => {
+      btn.textContent = '▶';
+      btn.classList.remove('playing');
+    });
+  }
+
+  const blob = base64ToBlob(note.audioData);
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+
+  const playBtn = savedNotesList.querySelector(`[data-index="${index}"] .play-btn`);
+
+  audio.onplay = () => {
+    if (playBtn) {
+      playBtn.textContent = '⏹';
+      playBtn.classList.add('playing');
+    }
+  };
+
+  audio.onended = () => {
+    URL.revokeObjectURL(url);
+    currentlyPlayingAudio = null;
+    if (playBtn) {
+      playBtn.textContent = '▶';
+      playBtn.classList.remove('playing');
+    }
+  };
+
+  audio.onerror = () => {
+    URL.revokeObjectURL(url);
+    currentlyPlayingAudio = null;
+    showError('Failed to play audio');
+    if (playBtn) {
+      playBtn.textContent = '▶';
+      playBtn.classList.remove('playing');
+    }
+  };
+
+  currentlyPlayingAudio = audio;
+  audio.play();
+}
+
+/**
+ * Stop currently playing audio
+ */
+function stopAudio() {
+  if (currentlyPlayingAudio) {
+    currentlyPlayingAudio.pause();
+    currentlyPlayingAudio = null;
+    document.querySelectorAll('.play-btn').forEach(btn => {
+      btn.textContent = '▶';
+      btn.classList.remove('playing');
+    });
+  }
+}
+
+/**
  * Load saved notes from localStorage
  */
 function loadSavedNotes() {
@@ -765,6 +866,7 @@ function renderSavedNotes() {
         <div class="saved-note-header">
           <span class="saved-note-time">${formatTimestamp(note.timestamp)}</span>
           <div class="saved-note-actions">
+            ${note.audioData ? `<button class="saved-note-btn play-btn" title="Play audio">▶</button>` : ''}
             <button class="saved-note-btn copy" title="Copy to clipboard">Copy</button>
             <button class="saved-note-btn delete" title="Delete note">Delete</button>
           </div>
@@ -787,9 +889,9 @@ function escapeHtml(text) {
 }
 
 /**
- * Save current note
+ * Save current note with audio
  */
-function saveCurrentNote() {
+async function saveCurrentNote() {
   const text = transcription.textContent?.trim();
   if (!text) {
     showError('No transcription to save');
@@ -804,12 +906,23 @@ function saveCurrentNote() {
     return;
   }
 
+  // Convert audio blob to base64 if available
+  let audioData = null;
+  if (currentAudioBlob) {
+    try {
+      audioData = await blobToBase64(currentAudioBlob);
+    } catch (err) {
+      console.warn('Failed to save audio:', err);
+    }
+  }
+
   // Add new note at the beginning
   notes.unshift({
     id: Date.now(),
     timestamp: Date.now(),
     text: text,
     trade: currentTradeInfo,
+    audioData: audioData,
   });
 
   saveSavedNotes(notes);
@@ -887,6 +1000,13 @@ savedNotesList.addEventListener('click', (e) => {
     deleteSavedNote(index);
   } else if (e.target.classList.contains('copy')) {
     copySavedNote(index);
+  } else if (e.target.classList.contains('play-btn')) {
+    // Toggle play/stop
+    if (e.target.classList.contains('playing')) {
+      stopAudio();
+    } else {
+      playNoteAudio(index);
+    }
   }
 });
 

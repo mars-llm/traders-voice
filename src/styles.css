@@ -709,6 +709,29 @@ body {
   color: var(--error);
 }
 
+.saved-note-btn.play-btn {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+.saved-note-btn.play-btn:hover {
+  background: var(--accent);
+  color: var(--bg-base);
+}
+
+.saved-note-btn.play-btn.playing {
+  background: var(--error-muted);
+  color: var(--error);
+}
+
+.saved-note-btn.play-btn.playing:hover {
+  background: var(--error);
+  color: white;
+}
+
 .saved-note-text {
   font-size: 13px;
   color: var(--fg-secondary);
