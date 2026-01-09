@@ -40,23 +40,10 @@ const WHISPER_STRIDE_LENGTH = 5;
 // UI constants
 const TOOLTIP_OFFSET = 30;
 
-// Check for SharedArrayBuffer availability (required for ONNX/Whisper)
-// The coi-serviceworker adds COOP/COEP headers, enabling SharedArrayBuffer
-// Only show error if SharedArrayBuffer is truly unavailable after SW has had time to set up
-if (typeof SharedArrayBuffer === 'undefined') {
-  // Give service worker time to set up and reload the page
-  setTimeout(() => {
-    // Check again - if still unavailable, show error
-    if (typeof SharedArrayBuffer === 'undefined') {
-      console.error('SharedArrayBuffer not available. COOP/COEP headers may not be set.');
-      const errorEl = document.getElementById('errorMsg');
-      if (errorEl) {
-        errorEl.textContent = 'Browser security headers not configured. Try reloading the page.';
-        errorEl.classList.add('visible');
-      }
-    }
-  }, 3000);
-}
+// SharedArrayBuffer is required for ONNX/Whisper transcription
+// The coi-serviceworker adds COOP/COEP headers to enable it
+// We check availability when the user tries to record, not on page load
+// This allows demo mode to work even without SharedArrayBuffer
 
 // DOM Elements
 const recordBtn = document.getElementById('recordBtn');
@@ -510,6 +497,13 @@ async function transcribe(audioBlob) {
  * Start recording from microphone
  */
 async function startRecording() {
+  // Check SharedArrayBuffer before recording - required for Whisper transcription
+  if (typeof SharedArrayBuffer === 'undefined') {
+    showError('Voice recording requires browser security features. Try Chrome, or reload the page.');
+    console.error('SharedArrayBuffer not available. COOP/COEP headers may not be set.');
+    return;
+  }
+
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
