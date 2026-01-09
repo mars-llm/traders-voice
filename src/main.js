@@ -40,16 +40,22 @@ const WHISPER_STRIDE_LENGTH = 5;
 const TOOLTIP_OFFSET = 30;
 
 // Check for SharedArrayBuffer availability (required for ONNX/Whisper)
-if (typeof SharedArrayBuffer === 'undefined') {
-  console.error('SharedArrayBuffer not available. COOP/COEP headers may not be set.');
-  // Show error after DOM is ready
-  document.addEventListener('DOMContentLoaded', () => {
-    const errorEl = document.getElementById('errorMsg');
-    if (errorEl) {
-      errorEl.textContent = 'Browser security headers not configured. Try reloading the page.';
-      errorEl.classList.add('visible');
+// Use crossOriginIsolated which is the proper check for COOP/COEP headers
+// Don't show error immediately - give service worker time to set up and reload
+if (!window.crossOriginIsolated) {
+  // Only show error after a delay to allow service worker to reload the page
+  // If the SW reloads us, this timeout won't fire
+  setTimeout(() => {
+    // Double-check after delay - SW might have fixed it
+    if (!window.crossOriginIsolated && typeof SharedArrayBuffer === 'undefined') {
+      console.error('SharedArrayBuffer not available. COOP/COEP headers may not be set.');
+      const errorEl = document.getElementById('errorMsg');
+      if (errorEl) {
+        errorEl.textContent = 'Browser security headers not configured. Try reloading the page.';
+        errorEl.classList.add('visible');
+      }
     }
-  });
+  }, 2000);
 }
 
 // DOM Elements

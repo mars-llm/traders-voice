@@ -85,7 +85,18 @@ if (typeof window === 'undefined') {
 
         // If we're already coi: do nothing. Perhaps it's due to this script doing its job, or COOP/COEP are
         // already set from the origin server. Also if the browser has no notion of crossOriginIsolated, just give up here.
-        if (window.crossOriginIsolated !== false || !coi.shouldRegister()) return;
+        if (window.crossOriginIsolated !== false || !coi.shouldRegister()) {
+            // Clear the reload flag since we're now isolated (or don't need to be)
+            sessionStorage.removeItem('coi-reload-attempted');
+            return;
+        }
+
+        // Prevent infinite reload loops - only try once per session
+        const reloadKey = 'coi-reload-attempted';
+        if (sessionStorage.getItem(reloadKey)) {
+            !coi.quiet && console.log("COOP/COEP: Already attempted reload this session, not retrying");
+            return;
+        }
 
         if (!window.isSecureContext) {
             !coi.quiet && console.log("COOP/COEP Service Worker not registered, a secure context is required.");
@@ -106,12 +117,14 @@ if (typeof window === 'undefined') {
 
                     registration.addEventListener("updatefound", () => {
                         !coi.quiet && console.log("Reloading page to make use of updated COOP/COEP Service Worker.");
+                        sessionStorage.setItem(reloadKey, 'true');
                         coi.doReload();
                     });
 
                     // If the registration is active, but it's not controlling the page
                     if (registration.active && !n.serviceWorker.controller) {
                         !coi.quiet && console.log("Reloading page to make use of COOP/COEP Service Worker.");
+                        sessionStorage.setItem(reloadKey, 'true');
                         coi.doReload();
                     }
                 },
