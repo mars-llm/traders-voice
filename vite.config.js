@@ -1,6 +1,11 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const CROSS_ORIGIN_HEADERS = {
+  'Cross-Origin-Embedder-Policy': 'require-corp',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+};
+
 export default defineConfig({
   base: '/traders-voice/',
   root: 'src',
@@ -15,18 +20,11 @@ export default defineConfig({
   },
   server: {
     port: 5174,
-    strictPort: true,
     open: true,
-    headers: {
-      'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Cross-Origin-Opener-Policy': 'same-origin',
-    },
+    headers: CROSS_ORIGIN_HEADERS,
   },
   preview: {
-    headers: {
-      'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Cross-Origin-Opener-Policy': 'same-origin',
-    },
+    headers: CROSS_ORIGIN_HEADERS,
   },
   optimizeDeps: {
     exclude: ['@huggingface/transformers'],

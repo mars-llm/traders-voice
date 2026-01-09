@@ -27,6 +27,18 @@ import {
 // Disable local model loading (use Hugging Face CDN)
 env.allowLocalModels = false;
 
+// Audio visualization constants
+const WAVEFORM_WIDTH = 200;
+const WAVEFORM_HEIGHT = 60;
+const ANALYZER_FFT_SIZE = 256;
+
+// Whisper transcription settings
+const WHISPER_CHUNK_LENGTH = 30;
+const WHISPER_STRIDE_LENGTH = 5;
+
+// UI constants
+const TOOLTIP_OFFSET = 30;
+
 // Check for SharedArrayBuffer availability (required for ONNX/Whisper)
 if (typeof SharedArrayBuffer === 'undefined') {
   console.error('SharedArrayBuffer not available. COOP/COEP headers may not be set.');
@@ -110,15 +122,6 @@ function formatDuration(seconds) {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-/**
- * Format number with commas for display
- */
-function formatNumber(num) {
-  if (num >= 1000) {
-    return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-  }
-  return num.toFixed(2);
-}
 
 /**
  * Show error message temporarily
@@ -151,8 +154,8 @@ function createWaveformCanvas() {
 
   waveformCanvas = document.createElement('canvas');
   waveformCanvas.className = 'waveform-canvas';
-  waveformCanvas.width = 200;
-  waveformCanvas.height = 60;
+  waveformCanvas.width = WAVEFORM_WIDTH;
+  waveformCanvas.height = WAVEFORM_HEIGHT;
   waveformCtx = waveformCanvas.getContext('2d');
 }
 
@@ -209,7 +212,7 @@ function startWaveformVisualization(stream) {
 
   audioContext = new AudioContext();
   analyser = audioContext.createAnalyser();
-  analyser.fftSize = 256;
+  analyser.fftSize = ANALYZER_FFT_SIZE;
 
   const source = audioContext.createMediaStreamSource(stream);
   source.connect(analyser);
@@ -396,8 +399,8 @@ async function transcribe(audioBlob) {
 
     const result = await pipe(audioData, {
       return_timestamps: false,
-      chunk_length_s: 30,
-      stride_length_s: 5,
+      chunk_length_s: WHISPER_CHUNK_LENGTH,
+      stride_length_s: WHISPER_STRIDE_LENGTH,
     });
 
     progressFill.style.width = '100%';
@@ -592,7 +595,7 @@ function buildPriceLevelsSection(trade) {
     pricesHtml += `
       <div class="trade-price-item entry">
         <span class="trade-price-label">Entry</span>
-        <span class="trade-price-value copyable-value" data-copy="${trade.price}">$${formatNumber(trade.price)}</span>
+        <span class="trade-price-value copyable-value" data-copy="${trade.price}">$${formatSavedNoteNumber(trade.price)}</span>
       </div>`;
   }
 
@@ -601,7 +604,7 @@ function buildPriceLevelsSection(trade) {
     pricesHtml += `
       <div class="trade-price-item stop-loss">
         <span class="trade-price-label">Stop Loss</span>
-        <span class="trade-price-value copyable-value" data-copy="${trade.stopLoss}">$${formatNumber(trade.stopLoss)}</span>
+        <span class="trade-price-value copyable-value" data-copy="${trade.stopLoss}">$${formatSavedNoteNumber(trade.stopLoss)}</span>
         ${slChange !== null ? `<span class="trade-price-change negative">${formatPercent(slChange)}</span>` : ''}
       </div>`;
   }
@@ -611,7 +614,7 @@ function buildPriceLevelsSection(trade) {
     pricesHtml += `
       <div class="trade-price-item take-profit">
         <span class="trade-price-label">Take Profit</span>
-        <span class="trade-price-value copyable-value" data-copy="${trade.takeProfit}">$${formatNumber(trade.takeProfit)}</span>
+        <span class="trade-price-value copyable-value" data-copy="${trade.takeProfit}">$${formatSavedNoteNumber(trade.takeProfit)}</span>
         ${tpChange !== null ? `<span class="trade-price-change positive">${formatPercent(tpChange)}</span>` : ''}
       </div>`;
   }
@@ -639,7 +642,7 @@ function buildPositionDetailsSection(trade) {
     positionHtml += `
       <div class="trade-position-item">
         <span class="trade-position-label">Position Size</span>
-        <span class="trade-position-value copyable-value" data-copy="${trade.positionSize}">$${formatNumber(trade.positionSize)}</span>
+        <span class="trade-position-value copyable-value" data-copy="${trade.positionSize}">$${formatSavedNoteNumber(trade.positionSize)}</span>
       </div>`;
   }
 
@@ -648,7 +651,7 @@ function buildPositionDetailsSection(trade) {
     positionHtml += `
       <div class="trade-position-item">
         <span class="trade-position-label">Quantity</span>
-        <span class="trade-position-value copyable-value" data-copy="${trade.quantity}">${formatNumber(trade.quantity)} ${ticker}</span>
+        <span class="trade-position-value copyable-value" data-copy="${trade.quantity}">${formatSavedNoteNumber(trade.quantity)} ${ticker}</span>
       </div>`;
   }
 
@@ -775,7 +778,7 @@ tradeCard.addEventListener('click', async (e) => {
     // Position tooltip near the clicked element
     const rect = copyableEl.getBoundingClientRect();
     tooltip.style.left = `${rect.left + rect.width / 2}px`;
-    tooltip.style.top = `${rect.top - 30}px`;
+    tooltip.style.top = `${rect.top - TOOLTIP_OFFSET}px`;
     tooltip.style.transform = 'translateX(-50%)';
 
     document.body.appendChild(tooltip);

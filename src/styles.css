@@ -29,8 +29,13 @@
   --accent-muted: rgba(59, 130, 246, 0.15);
   --success: #22c55e;
   --success-muted: #166534;
+  --success-border: rgba(34, 197, 94, 0.3);
   --error: #ef4444;
   --error-muted: #7f1d1d;
+  --error-border: rgba(239, 68, 68, 0.3);
+  --error-glow: rgba(239, 68, 68, 0.15);
+  --error-light: #f87171;
+  --highlight-gold: #D4AF37;
 
   /* Spacing (4px grid) */
   --space-1: 4px;
@@ -215,13 +220,13 @@ body {
   position: absolute;
   inset: -12px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--error-glow) 0%, transparent 70%);
   pointer-events: none;
   z-index: -1;
 }
 
 .record-btn.idle:hover {
-  background: #f87171;
+  background: var(--error-light);
   transform: scale(1.04);
 }
 
@@ -278,7 +283,7 @@ body {
   margin-top: var(--space-3);
   border-radius: var(--radius-md);
   background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.15);
+  border: 1px solid var(--error-glow);
 }
 
 /* Progress */
@@ -511,28 +516,18 @@ body {
   letter-spacing: 0.05em;
 }
 
-.trade-card-direction.long {
-  background: var(--success-muted);
-  color: var(--success);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.trade-card-direction.short {
-  background: var(--error-muted);
-  color: var(--error);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
+.trade-card-direction.long,
 .trade-card-direction.buy {
   background: var(--success-muted);
   color: var(--success);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  border: 1px solid var(--success-border);
 }
 
+.trade-card-direction.short,
 .trade-card-direction.sell {
   background: var(--error-muted);
   color: var(--error);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid var(--error-border);
 }
 
 /* Price Levels Grid */
@@ -725,7 +720,7 @@ body {
 
 .trade-card-action.sell {
   background: var(--error-muted);
-  color: #f87171;
+  color: var(--error-light);
 }
 
 .trade-card-details {
@@ -898,7 +893,7 @@ body {
 
 .saved-note-trade-action.sell {
   background: var(--error-muted);
-  color: #f87171;
+  color: var(--error-light);
 }
 
 .saved-note-trade-details {
@@ -1012,13 +1007,6 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-/* Footer */
-.footer {
-  padding: var(--space-4);
-  border-top: 1px solid var(--border);
-  text-align: center;
 }
 
 .github-link {
@@ -1416,7 +1404,7 @@ body {
 }
 
 .empty-state-headline .highlight {
-  color: #D4AF37;
+  color: var(--highlight-gold);
 }
 
 .empty-state-text {
