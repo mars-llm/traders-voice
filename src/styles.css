@@ -1411,8 +1411,7 @@ body {
   font-size: 24px;
   font-weight: 700;
   color: #fff;
-  margin: 0 0 var(--space-3) 0;
-  text-transform: uppercase;
+  margin-bottom: var(--space-3);
   letter-spacing: 0.05em;
 }
 
