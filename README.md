@@ -2,6 +2,10 @@
 
 A minimal, fully-local speech-to-text tool for traders. Capture your trade thoughts instantly without typing.
 
+<p align="center">
+  <img src="docs/screenshots/readme-hero.png" alt="Traders Voice" width="700">
+</p>
+
 ## Why Traders Voice?
 
 During active trades, typing notes breaks your focus. Traders Voice lets you speak your observations naturally:
@@ -32,6 +36,15 @@ One click to record. One click to copy. Paste into your journal. Done.
 - **One-Time Download** - Model cached after first use
 - **No Internet Required** - Works completely offline after setup
 - **Instant Subsequent Loads** - Cached model loads in <2 seconds
+
+### Smart Trade Parsing
+- **Auto-Extracts** - Ticker, price, stop loss, take profit
+- **Risk/Reward Chart** - Visual price levels with R:R ratio
+- **Save Notes** - Keep up to 10 notes with audio playback
+
+<p align="center">
+  <img src="docs/screenshots/readme-desktop-notes.png" alt="Trade parsing with R:R chart" width="700">
+</p>
 
 ## Quick Start
 
