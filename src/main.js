@@ -41,14 +41,13 @@ const WHISPER_STRIDE_LENGTH = 5;
 const TOOLTIP_OFFSET = 30;
 
 // Check for SharedArrayBuffer availability (required for ONNX/Whisper)
-// Use crossOriginIsolated which is the proper check for COOP/COEP headers
-// Don't show error immediately - give service worker time to set up and reload
-if (!window.crossOriginIsolated) {
-  // Only show error after a delay to allow service worker to reload the page
-  // If the SW reloads us, this timeout won't fire
+// The coi-serviceworker adds COOP/COEP headers, enabling SharedArrayBuffer
+// Only show error if SharedArrayBuffer is truly unavailable after SW has had time to set up
+if (typeof SharedArrayBuffer === 'undefined') {
+  // Give service worker time to set up and reload the page
   setTimeout(() => {
-    // Double-check after delay - SW might have fixed it
-    if (!window.crossOriginIsolated && typeof SharedArrayBuffer === 'undefined') {
+    // Check again - if still unavailable, show error
+    if (typeof SharedArrayBuffer === 'undefined') {
       console.error('SharedArrayBuffer not available. COOP/COEP headers may not be set.');
       const errorEl = document.getElementById('errorMsg');
       if (errorEl) {
@@ -56,7 +55,7 @@ if (!window.crossOriginIsolated) {
         errorEl.classList.add('visible');
       }
     }
-  }, 2000);
+  }, 3000);
 }
 
 // DOM Elements
@@ -1114,12 +1113,22 @@ savedNotesList.addEventListener('click', (e) => {
   }
 
   if (e.target.id === 'emptyStateDemoBtn') {
-    const demo = getNextDemo();
-    transcription.textContent = demo.transcript;
-    resultSection.classList.add('visible');
-    currentTradeInfo = demo.trade;
-    renderTradeCard(demo.trade);
-    resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Brief loading state for smoother feel
+    e.target.textContent = 'Loading...';
+    e.target.disabled = true;
+
+    setTimeout(() => {
+      const demo = getNextDemo();
+      transcription.textContent = demo.transcript;
+      resultSection.classList.add('visible');
+      currentTradeInfo = demo.trade;
+      renderTradeCard(demo.trade);
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Reset button
+      e.target.textContent = 'Try a demo';
+      e.target.disabled = false;
+    }, 300);
     return;
   }
 
