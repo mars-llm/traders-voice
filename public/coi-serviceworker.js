@@ -94,7 +94,13 @@ if (typeof window === 'undefined') {
 
         // In some environments (e.g. Chrome incognito mode) this won't be available
         if (n.serviceWorker) {
-            n.serviceWorker.register(window.document.currentScript.src).then(
+            // Use coi.scriptPath if available (for dynamically-loaded scripts where currentScript is null)
+            const scriptUrl = coi.scriptPath || (window.document.currentScript && window.document.currentScript.src);
+            if (!scriptUrl) {
+                !coi.quiet && console.error("COOP/COEP Service Worker: Cannot determine script URL for registration");
+                return;
+            }
+            n.serviceWorker.register(scriptUrl).then(
                 (registration) => {
                     !coi.quiet && console.log("COOP/COEP Service Worker registered", registration.scope);
 
