@@ -23,6 +23,7 @@ import {
   canSaveNote,
   createNote,
 } from './savedNotes.js';
+import { getNextDemo, resetDemoCycle } from './demoData.js';
 
 // Disable local model loading (use Hugging Face CDN)
 env.allowLocalModels = false;
@@ -359,6 +360,31 @@ function calculateAggregateProgress() {
 }
 
 /**
+ * Show error with retry button in progress section
+ */
+function showModelError(message) {
+  progressFill.style.width = '0%';
+  progressText.innerHTML = `
+    ${message}
+    <button class="retry-btn" id="retryModelBtn">Retry</button>
+  `;
+
+  // Wire up retry handler (innerHTML creates fresh element, so no duplicate listeners)
+  const retryBtn = document.getElementById('retryModelBtn');
+  if (retryBtn) {
+    retryBtn.addEventListener('click', async () => {
+      transcriber = null;
+      try {
+        await getTranscriber();
+      } catch (err) {
+        console.error('Retry failed:', err);
+        showModelError('Failed to download model. Check your connection and try again.');
+      }
+    });
+  }
+}
+
+/**
  * Load or retrieve cached Whisper transcriber
  */
 async function getTranscriber() {
@@ -371,37 +397,54 @@ async function getTranscriber() {
 
   currentModel = selectedModel;
   resetProgress();
-  progressText.textContent = 'Loading model...';
+  progressText.textContent = 'Checking model cache...';
   progressFill.style.width = '0%';
 
-  transcriber = await pipeline('automatic-speech-recognition', selectedModel, {
-    dtype: 'q8',
-    device: 'wasm',
-    progress_callback: (progress) => {
-      const file = progress.file || 'main';
+  let isDownloading = false;
 
-      if (progress.status === 'initiate') {
-        totalFiles++;
-        downloadProgress[file] = 0;
-      } else if (progress.status === 'progress') {
-        downloadProgress[file] = progress.progress || 0;
-        const aggregate = calculateAggregateProgress();
-        progressFill.style.width = `${aggregate}%`;
-        progressText.textContent = `Loading model... ${Math.round(aggregate)}%`;
-      } else if (progress.status === 'done') {
-        completedFiles++;
-        delete downloadProgress[file];
-        const aggregate = calculateAggregateProgress();
-        progressFill.style.width = `${aggregate}%`;
-        progressText.textContent = `Loading model... ${Math.round(aggregate)}%`;
-      } else if (progress.status === 'ready') {
-        progressFill.style.width = '100%';
-        progressText.textContent = 'Model ready';
-      }
-    },
-  });
+  try {
+    transcriber = await pipeline('automatic-speech-recognition', selectedModel, {
+      dtype: 'q8',
+      device: 'wasm',
+      progress_callback: (progress) => {
+        const file = progress.file || 'main';
 
-  return transcriber;
+        if (progress.status === 'initiate') {
+          totalFiles++;
+          downloadProgress[file] = 0;
+          // If we see file initiation, we're downloading (not cached)
+          if (!isDownloading) {
+            isDownloading = true;
+            progressText.textContent = 'Downloading model...';
+          }
+        } else if (progress.status === 'progress') {
+          downloadProgress[file] = progress.progress || 0;
+          const aggregate = calculateAggregateProgress();
+          progressFill.style.width = `${aggregate}%`;
+          progressText.textContent = `Downloading model... ${Math.round(aggregate)}%`;
+        } else if (progress.status === 'done') {
+          completedFiles++;
+          delete downloadProgress[file];
+          const aggregate = calculateAggregateProgress();
+          progressFill.style.width = `${aggregate}%`;
+          if (aggregate < 100) {
+            progressText.textContent = `Downloading model... ${Math.round(aggregate)}%`;
+          } else {
+            progressText.textContent = 'Initializing...';
+          }
+        } else if (progress.status === 'ready') {
+          progressFill.style.width = '100%';
+          progressText.textContent = 'Ready · Cached for offline use';
+        }
+      },
+    });
+
+    return transcriber;
+  } catch (err) {
+    console.error('Model loading failed:', err);
+    showModelError('Failed to download model. Check your connection and try again.');
+    throw err;
+  }
 }
 
 /**
@@ -546,7 +589,25 @@ clearBtn.addEventListener('click', () => {
   transcription.textContent = '';
   resultSection.classList.remove('visible');
   renderTradeCard(null);
+  resetDemoCycle();
 });
+
+// Try Demo button handler
+const tryDemoBtn = document.getElementById('tryDemoBtn');
+if (tryDemoBtn) {
+  tryDemoBtn.addEventListener('click', () => {
+    const demo = getNextDemo();
+
+    transcription.textContent = demo.transcript;
+    resultSection.classList.add('visible');
+
+    currentTradeInfo = demo.trade;
+    renderTradeCard(demo.trade);
+
+    // Scroll to results on mobile
+    resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+}
 
 // Keyboard shortcut: Space to toggle recording
 document.addEventListener('keydown', (e) => {
