@@ -305,22 +305,39 @@ function setState(state) {
  */
 async function resampleTo16kMono(blob) {
   const arrayBuffer = await blob.arrayBuffer();
+
+  // Check if we have valid audio data
+  if (arrayBuffer.byteLength === 0) {
+    throw new Error('No audio data recorded');
+  }
+
   const ctx = new AudioContext();
-  const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
 
-  const targetSampleRate = 16000;
-  const numSamples = Math.ceil(audioBuffer.duration * targetSampleRate);
+  try {
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
 
-  const offlineContext = new OfflineAudioContext(1, numSamples, targetSampleRate);
-  const source = offlineContext.createBufferSource();
-  source.buffer = audioBuffer;
-  source.connect(offlineContext.destination);
-  source.start();
+    const targetSampleRate = 16000;
+    const numSamples = Math.ceil(audioBuffer.duration * targetSampleRate);
 
-  const resampled = await offlineContext.startRendering();
-  await ctx.close();
+    if (numSamples === 0) {
+      throw new Error('Audio recording too short');
+    }
 
-  return resampled.getChannelData(0);
+    const offlineContext = new OfflineAudioContext(1, numSamples, targetSampleRate);
+    const source = offlineContext.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(offlineContext.destination);
+    source.start();
+
+    const resampled = await offlineContext.startRendering();
+    await ctx.close();
+
+    return resampled.getChannelData(0);
+  } catch (err) {
+    await ctx.close();
+    console.error('Audio decode error:', err, 'Blob type:', blob.type, 'Size:', blob.size);
+    throw new Error('Unable to decode audio. Try recording for longer or use Chrome/Firefox.');
+  }
 }
 
 // Progress tracking for model loading
@@ -510,11 +527,20 @@ async function startRecording() {
     // Start waveform visualization
     startWaveformVisualization(stream);
 
-    mediaRecorder = new MediaRecorder(stream, {
-      mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : 'audio/webm',
-    });
+    // Try different audio formats in order of preference
+    const mimeTypes = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/ogg;codecs=opus',
+      'audio/mp4',
+      'audio/wav'
+    ];
+    const supportedMime = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || '';
+
+    console.log('Using audio format:', supportedMime || 'default');
+
+    const recorderOptions = supportedMime ? { mimeType: supportedMime } : {};
+    mediaRecorder = new MediaRecorder(stream, recorderOptions);
 
     audioChunks = [];
 
@@ -528,7 +554,7 @@ async function startRecording() {
       stream.getTracks().forEach((track) => track.stop());
 
       if (audioChunks.length > 0) {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
         currentAudioBlob = audioBlob; // Store for replay
         await transcribe(audioBlob);
       }
