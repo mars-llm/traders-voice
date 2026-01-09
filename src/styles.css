@@ -627,12 +627,14 @@ body {
   background: var(--success);
 }
 
-/* Speaking Tips Section */
-.speaking-tips {
+/* Collapsible Sections (Speaking Tips, FAQ) */
+.speaking-tips,
+.landing-faq {
   border-top: 1px solid var(--border);
 }
 
-.speaking-tips-toggle {
+.speaking-tips-toggle,
+.landing-faq-toggle {
   width: 100%;
   padding: var(--space-3) var(--space-5);
   background: transparent;
@@ -640,7 +642,6 @@ body {
   color: var(--fg-muted);
   font-size: 12px;
   cursor: pointer;
-  text-align: center;
   transition: all var(--duration-fast) var(--ease);
   display: flex;
   align-items: center;
@@ -648,9 +649,28 @@ body {
   gap: var(--space-1);
 }
 
-.speaking-tips-toggle:hover {
+.speaking-tips-toggle {
+  text-align: center;
+}
+
+.landing-faq-toggle {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+}
+
+.speaking-tips-toggle:hover,
+.landing-faq-toggle:hover {
   color: var(--fg-secondary);
   background: var(--bg-elevated);
+}
+
+.landing-faq-toggle:hover {
+  color: var(--fg-primary);
+  background: var(--bg-hover);
 }
 
 .toggle-arrow {
@@ -658,13 +678,30 @@ body {
   transition: transform var(--duration-fast) var(--ease);
 }
 
-.speaking-tips-content {
+.landing-faq-toggle .toggle-arrow {
+  color: var(--fg-faint);
+}
+
+.landing-faq-toggle[aria-expanded="true"] .toggle-arrow {
+  transform: rotate(180deg);
+}
+
+.speaking-tips-content,
+.landing-faq-content {
   display: none;
-  padding: 0 var(--space-5) var(--space-4);
   background: var(--bg-elevated);
 }
 
-.speaking-tips-content.visible {
+.speaking-tips-content {
+  padding: 0 var(--space-5) var(--space-4);
+}
+
+.landing-faq-content {
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+.speaking-tips-content.visible,
+.landing-faq-content.visible {
   display: block;
 }
 
@@ -718,6 +755,68 @@ body {
   font-size: 9px;
   letter-spacing: 0.05em;
   margin-right: var(--space-1);
+}
+
+/* Coach Prompt Card */
+.coach-prompt {
+  border-top: 1px solid var(--border);
+  padding: var(--space-3) var(--space-5);
+  background: var(--bg-base);
+  display: none;
+}
+
+.coach-prompt.visible {
+  display: block;
+}
+
+.coach-prompt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.coach-prompt-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.coach-prompt-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.coach-prompt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--fg-faint);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.coach-prompt-btn:hover {
+  color: var(--fg-primary);
+  background: var(--bg-hover);
+  border-color: var(--border-focus);
+}
+
+.coach-prompt-text {
+  font-size: 12px;
+  color: var(--fg-secondary);
+  line-height: 1.5;
+  font-style: italic;
 }
 
 /* Error Message */
@@ -896,15 +995,13 @@ body {
   letter-spacing: 0.05em;
 }
 
-.trade-card-direction.long,
-.trade-card-direction.buy {
+.trade-card-direction.long {
   background: var(--success-muted);
   color: var(--success);
   border: 1px solid var(--success-border);
 }
 
-.trade-card-direction.short,
-.trade-card-direction.sell {
+.trade-card-direction.short {
   background: var(--error-muted);
   color: var(--error);
   border: 1px solid var(--error-border);
@@ -1093,12 +1190,14 @@ body {
   letter-spacing: 0.02em;
 }
 
-.trade-card-action.buy {
+.trade-card-action.buy,
+.saved-note-trade-action.buy {
   background: var(--success-muted);
   color: var(--success);
 }
 
-.trade-card-action.sell {
+.trade-card-action.sell,
+.saved-note-trade-action.sell {
   background: var(--error-muted);
   color: var(--error-light);
 }
@@ -1297,15 +1396,6 @@ body {
   letter-spacing: 0.02em;
 }
 
-.saved-note-trade-action.buy {
-  background: var(--success-muted);
-  color: var(--success);
-}
-
-.saved-note-trade-action.sell {
-  background: var(--error-muted);
-  color: var(--error-light);
-}
 
 .saved-note-trade-details {
   display: flex;
@@ -1936,6 +2026,19 @@ body {
     border-top: 1px solid var(--border);
   }
 
+  .right-panel .landing-section {
+    border-top: 1px solid var(--border);
+  }
+
+  /* FAQ: Expanded by default on desktop */
+  .landing-faq-toggle[aria-expanded="false"] {
+    display: none;
+  }
+
+  .landing-faq-content {
+    display: block;
+  }
+
   /* Header integrated into container */
   .header {
     background: transparent;
@@ -1951,6 +2054,89 @@ body {
     border: none;
     margin-top: 0;
   }
+}
+
+/* Landing Section - Benefits & FAQ */
+.landing-section {
+  padding: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+.landing-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Benefits Grid */
+.landing-benefits {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+.landing-benefit {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  align-items: flex-start;
+}
+
+.landing-benefit svg {
+  flex-shrink: 0;
+  color: var(--accent);
+  margin-top: 2px;
+}
+
+.landing-benefit-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.landing-benefit-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  margin-bottom: 2px;
+}
+
+.landing-benefit-text {
+  font-size: 11px;
+  color: var(--fg-muted);
+  line-height: 1.4;
+}
+
+/* FAQ Section Container */
+.landing-faq {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-elevated);
+}
+
+.faq-item {
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.faq-item:first-child {
+  border-top: none;
+}
+
+.faq-question {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-primary);
+  margin-bottom: var(--space-2);
+}
+
+.faq-answer {
+  font-size: 12px;
+  color: var(--fg-muted);
+  line-height: 1.5;
 }
 
 /* ============================================
@@ -2126,6 +2312,38 @@ body {
 
   .saved-note {
     padding: var(--space-3);
+  }
+
+  /* Coach Prompt: Adjust padding on mobile */
+  .coach-prompt {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .coach-prompt-btn {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Landing Section: Stack benefits vertically on mobile */
+  .landing-section {
+    padding: var(--space-4);
+  }
+
+  .landing-benefits {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  .landing-benefit {
+    padding: var(--space-3);
+  }
+
+  .landing-faq-toggle {
+    padding: var(--space-3);
+  }
+
+  .landing-faq-content {
+    padding: 0 var(--space-3) var(--space-3);
   }
 
   /* Footer: Stack vertically on mobile */

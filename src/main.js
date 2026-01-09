@@ -866,33 +866,23 @@ function formatPercent(value) {
  * Build trade card header HTML with ticker, direction, and meta badges
  */
 function buildTradeCardHeader(trade, collapsed) {
-  // Determine trade direction
-  // Prefer tradeType (long/short) over action (buy/sell) for display
   const displayAction = trade.tradeType || trade.action || '';
-
-  // Determine CSS class for styling
-  let directionClass = displayAction.toLowerCase();
-  if (trade.action === 'buy') {
-    directionClass = 'long';
-  } else if (trade.action === 'sell') {
-    directionClass = 'short';
-  }
-
+  const directionClass = trade.action === 'sell' ? 'short' : displayAction.toLowerCase();
   const directionText = displayAction.toUpperCase();
 
-  // Build meta badges for exchange and timeframe
-  let metaBadges = '';
-  if (trade.exchange) {
-    metaBadges += `<span class="trade-card-badge">${trade.exchange}</span>`;
-  }
-  if (trade.timeframe) {
-    metaBadges += `<span class="trade-card-badge">${trade.timeframe}</span>`;
-  }
+  const metaBadges = [trade.exchange, trade.timeframe]
+    .filter(Boolean)
+    .map(value => `<span class="trade-card-badge">${value}</span>`)
+    .join('');
+
+  const tickerHtml = trade.ticker
+    ? `<div class="trade-card-ticker copyable-value" data-copy="${trade.ticker}">${trade.ticker}</div>`
+    : '<div class="trade-card-ticker">Trade</div>';
 
   return `
     <div class="trade-card-header">
       <div class="trade-card-ticker-group">
-        ${trade.ticker ? `<div class="trade-card-ticker copyable-value" data-copy="${trade.ticker}">${trade.ticker}</div>` : '<div class="trade-card-ticker">Trade</div>'}
+        ${tickerHtml}
         ${metaBadges ? `<div class="trade-card-meta">${metaBadges}</div>` : ''}
       </div>
       <div class="trade-card-header-actions">
@@ -987,7 +977,7 @@ function buildPositionDetailsSection(trade) {
  * Build indicators section HTML
  */
 function buildIndicatorsSection(trade) {
-  if (!trade.indicators || !Array.isArray(trade.indicators) || trade.indicators.length === 0) {
+  if (!Array.isArray(trade.indicators) || trade.indicators.length === 0) {
     return '';
   }
 
@@ -1478,27 +1468,29 @@ if (privacyInfoBtn) {
 }
 
 // ============================================
-// SPEAKING TIPS TOGGLE
+// COLLAPSIBLE SECTION TOGGLE
 // ============================================
 
 /**
- * Toggle speaking tips visibility
+ * Setup collapsible section with toggle button
  */
-if (speakingTipsToggle && speakingTipsContent) {
-  speakingTipsToggle.addEventListener('click', () => {
-    const isExpanded = speakingTipsToggle.getAttribute('aria-expanded') === 'true';
-    const newExpandedState = !isExpanded;
+function setupCollapsibleSection(toggleBtn, contentEl) {
+  if (!toggleBtn || !contentEl) return;
 
-    speakingTipsToggle.setAttribute('aria-expanded', newExpandedState);
-    speakingTipsContent.classList.toggle('visible');
+  toggleBtn.addEventListener('click', () => {
+    const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+    toggleBtn.setAttribute('aria-expanded', String(!isExpanded));
+    contentEl.classList.toggle('visible');
 
-    // Update arrow direction
-    const arrow = speakingTipsToggle.querySelector('.toggle-arrow');
+    const arrow = toggleBtn.querySelector('.toggle-arrow');
     if (arrow) {
-      arrow.textContent = newExpandedState ? '▲' : '▼';
+      arrow.textContent = isExpanded ? '▼' : '▲';
     }
   });
 }
+
+// Setup speaking tips toggle
+setupCollapsibleSection(speakingTipsToggle, speakingTipsContent);
 
 // ============================================
 // MODAL FUNCTIONALITY
@@ -1657,6 +1649,31 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// ============================================
+// LANDING SECTION FAQ TOGGLE
+// ============================================
+
+const faqToggle = document.getElementById('faqToggle');
+const faqContent = document.getElementById('faqContent');
+
+if (faqToggle && faqContent) {
+  // Set initial state based on screen size
+  const isDesktop = window.innerWidth >= 900;
+  faqToggle.setAttribute('aria-expanded', String(isDesktop));
+  faqContent.classList.toggle('visible', isDesktop);
+
+  // Setup toggle behavior
+  setupCollapsibleSection(faqToggle, faqContent);
+
+  // Re-expand on desktop resize
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 900) {
+      faqToggle.setAttribute('aria-expanded', 'true');
+      faqContent.classList.add('visible');
+    }
+  });
+}
+
 // ============================================================================
 // PWA Installation Handling
 // ============================================================================
@@ -1686,3 +1703,89 @@ if ('serviceWorker' in navigator) {
     console.log('PWA ready');
   });
 }
+
+// ============================================================================
+// COACH PROMPTS
+// ============================================================================
+
+const COACH_PROMPTS = [
+  "State invalidation first: 'Stop is… because…'",
+  "Name timeframe + context: 'On the 1H…'",
+  "What would make you exit early?",
+  "Include your conviction level: high, medium, low",
+  "Mention the catalyst: earnings, news, breakout?",
+  "State risk in dollars, not just percentage",
+  "What's the reward-to-risk ratio?",
+  "Is this a trend trade or counter-trend?",
+  "Note market conditions: trending, ranging, volatile",
+  "Include your entry trigger: 'I'll enter when…'",
+  "What's your position size strategy?",
+  "Are you scaling in or all at once?",
+  "What indicators confirm this setup?",
+  "Where's the next resistance or support?",
+  "What's your target time horizon?",
+  "Is your stop beyond recent volatility?",
+  "What's your plan if price consolidates?",
+  "Are you risking 1%, 2%, or more?",
+  "Does volume support this move?",
+  "What's the broader market context?"
+];
+
+const coachPrompt = document.getElementById('coachPrompt');
+const coachPromptText = document.getElementById('coachPromptText');
+const nextPromptBtn = document.getElementById('nextPromptBtn');
+const dismissPromptBtn = document.getElementById('dismissPromptBtn');
+
+/**
+ * Get a random prompt from the list
+ */
+function getRandomPrompt() {
+  const randomIndex = Math.floor(Math.random() * COACH_PROMPTS.length);
+  return COACH_PROMPTS[randomIndex];
+}
+
+/**
+ * Show the coach prompt with current or new random prompt
+ */
+function showCoachPrompt() {
+  if (localStorage.getItem('traders-voice-coach-dismissed') === 'true') {
+    coachPrompt.classList.remove('visible');
+    return;
+  }
+
+  const currentPromptText = sessionStorage.getItem('traders-voice-current-prompt') || getRandomPrompt();
+  sessionStorage.setItem('traders-voice-current-prompt', currentPromptText);
+  coachPromptText.textContent = currentPromptText;
+  coachPrompt.classList.add('visible');
+}
+
+/**
+ * Load next prompt
+ */
+function loadNextPrompt() {
+  const newPrompt = getRandomPrompt();
+  sessionStorage.setItem('traders-voice-current-prompt', newPrompt);
+  coachPromptText.textContent = newPrompt;
+}
+
+/**
+ * Dismiss prompts permanently
+ */
+function dismissCoachPrompts() {
+  localStorage.setItem('traders-voice-coach-dismissed', 'true');
+  sessionStorage.removeItem('traders-voice-current-prompt');
+  coachPrompt.classList.remove('visible');
+  showToast('Coach prompts dismissed');
+}
+
+// Event listeners
+if (nextPromptBtn) {
+  nextPromptBtn.addEventListener('click', loadNextPrompt);
+}
+
+if (dismissPromptBtn) {
+  dismissPromptBtn.addEventListener('click', dismissCoachPrompts);
+}
+
+// Initialize coach prompt on page load
+showCoachPrompt();

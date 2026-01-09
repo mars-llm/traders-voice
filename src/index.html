@@ -121,6 +121,18 @@
             </div>
           </div>
         </div>
+
+        <!-- Coach Prompt Card -->
+        <div class="coach-prompt" id="coachPrompt">
+          <div class="coach-prompt-header">
+            <span class="coach-prompt-label">Coach prompt</span>
+            <div class="coach-prompt-actions">
+              <button class="coach-prompt-btn" id="nextPromptBtn" title="Next prompt">↻</button>
+              <button class="coach-prompt-btn" id="dismissPromptBtn" title="Dismiss prompts">&times;</button>
+            </div>
+          </div>
+          <div class="coach-prompt-text" id="coachPromptText"></div>
+        </div>
       </div>
 
       <div class="right-panel">
@@ -203,6 +215,73 @@
             <button class="btn btn-small btn-secondary" id="clearAllNotesBtn">Clear All</button>
           </div>
           <div class="saved-notes-list" id="savedNotesList"></div>
+        </div>
+
+        <!-- Landing Section: Benefits & FAQ -->
+        <div class="landing-section" id="landingSection">
+          <div class="landing-content">
+            <!-- Benefits -->
+            <div class="landing-benefits">
+              <div class="landing-benefit">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <div class="landing-benefit-content">
+                  <div class="landing-benefit-title">Local</div>
+                  <div class="landing-benefit-text">All processing in your browser</div>
+                </div>
+              </div>
+              <div class="landing-benefit">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"/>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                <div class="landing-benefit-content">
+                  <div class="landing-benefit-title">Offline</div>
+                  <div class="landing-benefit-text">Works without internet</div>
+                </div>
+              </div>
+              <div class="landing-benefit">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                <div class="landing-benefit-content">
+                  <div class="landing-benefit-title">Structured</div>
+                  <div class="landing-benefit-text">Auto-extracts trade details</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="landing-faq">
+              <button class="landing-faq-toggle" id="faqToggle" aria-expanded="false">
+                FAQ <span class="toggle-arrow">▼</span>
+              </button>
+              <div class="landing-faq-content" id="faqContent">
+                <div class="faq-item">
+                  <div class="faq-question">Do I need to grant microphone permission?</div>
+                  <div class="faq-answer">Yes, for recording your voice. Demo mode works without microphone access.</div>
+                </div>
+                <div class="faq-item">
+                  <div class="faq-question">How big is the model download?</div>
+                  <div class="faq-answer">41-244MB depending on the model you select. It downloads once and is cached for offline use.</div>
+                </div>
+                <div class="faq-item">
+                  <div class="faq-question">Does it work offline?</div>
+                  <div class="faq-answer">Yes, after the first model download. All processing happens locally in your browser.</div>
+                </div>
+                <div class="faq-item">
+                  <div class="faq-question">What languages are supported?</div>
+                  <div class="faq-answer">English-optimized models for best accuracy. Multilingual models available for other languages with English output.</div>
+                </div>
+                <div class="faq-item">
+                  <div class="faq-question">Is my audio sent anywhere?</div>
+                  <div class="faq-answer">No. 100% local processing. Your audio never leaves your device.</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
