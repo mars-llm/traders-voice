@@ -402,6 +402,87 @@ body {
   display: flex;
   gap: var(--space-2);
   justify-content: flex-end;
+  align-items: center;
+}
+
+/* Export Dropdown */
+.export-dropdown {
+  position: relative;
+}
+
+.export-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.export-dropdown-trigger svg {
+  flex-shrink: 0;
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.export-dropdown.open .export-dropdown-trigger svg {
+  transform: rotate(180deg);
+}
+
+.export-dropdown-menu {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: var(--space-1);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  min-width: 160px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: all var(--duration-fast) var(--ease);
+  z-index: 10;
+}
+
+.export-dropdown.open .export-dropdown-menu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.export-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  color: var(--fg-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--duration-fast) var(--ease);
+}
+
+.export-option:first-child {
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.export-option:last-child {
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.export-option:hover {
+  background: var(--bg-hover);
+  color: var(--fg-primary);
+}
+
+.export-option svg {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.export-option:hover svg {
+  opacity: 1;
 }
 
 /* Buttons */
@@ -654,6 +735,59 @@ body {
 
 .error-msg.visible {
   display: block;
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: 13px;
+  color: var(--fg-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-normal) var(--ease), transform var(--duration-normal) var(--ease);
+  min-width: 200px;
+  text-align: center;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+/* Toast container for stacking multiple toasts */
+.toast-container {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-2);
+  pointer-events: none;
+  max-width: 90vw;
+}
+
+.toast-container .toast {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  transform: translateY(100px);
+  pointer-events: auto;
+}
+
+.toast-container .toast.visible {
+  transform: translateY(0);
 }
 
 /* Trade Card - Professional Trading Terminal Design */
@@ -1921,6 +2055,22 @@ body {
   .result-actions .btn {
     flex: 1;
     min-width: 80px;
+  }
+
+  /* Export dropdown: Full width on mobile */
+  .export-dropdown {
+    flex: 1;
+  }
+
+  .export-dropdown-trigger {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .export-dropdown-menu {
+    left: 0;
+    right: 0;
+    min-width: auto;
   }
 
   /* Trade card: Responsive padding and layout */

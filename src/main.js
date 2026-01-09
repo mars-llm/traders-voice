@@ -54,7 +54,9 @@ const progressText = document.getElementById('progressText');
 const progressFill = document.getElementById('progressFill');
 const resultSection = document.getElementById('resultSection');
 const transcription = document.getElementById('transcription');
-const copyBtn = document.getElementById('copyBtn');
+const exportDropdown = document.getElementById('exportDropdown');
+const exportBtn = document.getElementById('exportBtn');
+const exportMenu = document.getElementById('exportMenu');
 const clearBtn = document.getElementById('clearBtn');
 const modelSelect = document.getElementById('modelSelect');
 const modelInfo = document.getElementById('modelInfo');
@@ -151,6 +153,42 @@ function showError(msg) {
   errorMsg.textContent = msg;
   errorMsg.classList.add('visible');
   setTimeout(() => errorMsg.classList.remove('visible'), 5000);
+}
+
+/**
+ * Show toast notification
+ */
+function showToast(message, duration = 2500) {
+  // Create or get toast container
+  let toastContainer = document.querySelector('.toast-container');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container';
+    document.body.appendChild(toastContainer);
+  }
+
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  toastContainer.appendChild(toast);
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.classList.add('visible');
+  });
+
+  // Auto-dismiss after duration
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => {
+      toast.remove();
+      // Clean up container if empty
+      if (toastContainer.children.length === 0) {
+        toastContainer.remove();
+      }
+    }, 200); // Match CSS transition duration
+  }, duration);
 }
 
 /**
@@ -598,16 +636,172 @@ function toggleRecording() {
   }
 }
 
+/**
+ * Format trade data as plain text
+ */
+function exportAsPlainText() {
+  return transcription.textContent;
+}
+
+/**
+ * Format trade data as Markdown
+ */
+function exportAsMarkdown() {
+  const text = transcription.textContent;
+  const trade = currentTradeInfo;
+  const timestamp = new Date().toISOString();
+
+  let markdown = '# Trade Note\n';
+  markdown += `**Date:** ${new Date().toLocaleString()}\n\n`;
+
+  markdown += '## Transcript\n';
+  markdown += `${text}\n\n`;
+
+  if (trade) {
+    markdown += '## Trade Details\n';
+
+    if (trade.action || trade.tradeType) {
+      const action = trade.tradeType || trade.action || '';
+      markdown += `- **Action:** ${action.charAt(0).toUpperCase() + action.slice(1)}\n`;
+    }
+
+    if (trade.ticker) {
+      markdown += `- **Ticker:** ${trade.ticker}\n`;
+    }
+
+    if (trade.exchange) {
+      markdown += `- **Exchange:** ${trade.exchange}\n`;
+    }
+
+    if (trade.price) {
+      markdown += `- **Entry:** $${formatSavedNoteNumber(trade.price)}\n`;
+    }
+
+    if (trade.stopLoss) {
+      markdown += `- **Stop Loss:** $${formatSavedNoteNumber(trade.stopLoss)}\n`;
+    }
+
+    if (trade.takeProfit) {
+      markdown += `- **Take Profit:** $${formatSavedNoteNumber(trade.takeProfit)}\n`;
+    }
+
+    // Calculate R:R ratio
+    const rrRatio = calculateRiskReward(trade.price, trade.stopLoss, trade.takeProfit, trade.action);
+    if (rrRatio !== null && rrRatio !== 0) {
+      markdown += `- **R:R:** 1:${rrRatio.toFixed(2)}\n`;
+    }
+
+    if (trade.timeframe) {
+      markdown += `- **Timeframe:** ${trade.timeframe}\n`;
+    }
+
+    if (trade.positionSize) {
+      markdown += `- **Position Size:** $${formatSavedNoteNumber(trade.positionSize)}\n`;
+    }
+
+    if (trade.quantity) {
+      markdown += `- **Quantity:** ${formatSavedNoteNumber(trade.quantity)}\n`;
+    }
+
+    if (trade.leverage) {
+      markdown += `- **Leverage:** ${trade.leverage}x\n`;
+    }
+
+    if (trade.indicators && trade.indicators.length > 0) {
+      markdown += `- **Indicators:** ${trade.indicators.join(', ')}\n`;
+    }
+
+    if (trade.rationale) {
+      markdown += `\n## Rationale\n${trade.rationale}\n`;
+    }
+  }
+
+  return markdown;
+}
+
+/**
+ * Format trade data as JSON
+ */
+function exportAsJSON() {
+  const text = transcription.textContent;
+  const trade = currentTradeInfo;
+
+  const data = {
+    schema_version: '1.0',
+    timestamp: new Date().toISOString(),
+    transcript: text,
+    trade: trade || null,
+    model: currentModel
+  };
+
+  return JSON.stringify(data, null, 2);
+}
+
+/**
+ * Export data in specified format
+ */
+async function exportData(format) {
+  let content = '';
+  let formatName = '';
+
+  switch (format) {
+    case 'text':
+      content = exportAsPlainText();
+      formatName = 'Plain Text';
+      break;
+    case 'markdown':
+      content = exportAsMarkdown();
+      formatName = 'Markdown';
+      break;
+    case 'json':
+      content = exportAsJSON();
+      formatName = 'JSON';
+      break;
+    default:
+      content = exportAsPlainText();
+      formatName = 'Plain Text';
+  }
+
+  if (!content) {
+    showToast('No content to export');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(content);
+    showToast(`Copied as ${formatName}`);
+  } catch (err) {
+    console.error('Failed to copy:', err);
+    showToast('Failed to copy to clipboard');
+  }
+}
+
 // Event Listeners
 recordBtn.addEventListener('click', toggleRecording);
 
-copyBtn.addEventListener('click', async () => {
-  const text = transcription.textContent;
-  if (text) {
-    await navigator.clipboard.writeText(text);
-    copyBtn.textContent = 'Copied!';
-    setTimeout(() => (copyBtn.textContent = 'Copy'), 1500);
+// Export dropdown toggle
+exportBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  exportDropdown.classList.toggle('open');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  if (!exportDropdown.contains(e.target)) {
+    exportDropdown.classList.remove('open');
   }
+});
+
+// Handle export option clicks
+exportMenu.addEventListener('click', async (e) => {
+  const option = e.target.closest('.export-option');
+  if (!option) return;
+
+  const format = option.dataset.format;
+  await exportData(format);
+
+  // Close dropdown
+  exportDropdown.classList.remove('open');
 });
 
 clearBtn.addEventListener('click', () => {
@@ -615,6 +809,7 @@ clearBtn.addEventListener('click', () => {
   resultSection.classList.remove('visible');
   renderTradeCard(null);
   resetDemoCycle();
+  showToast('Cleared');
 });
 
 // Try Demo button handler
@@ -1075,9 +1270,8 @@ async function saveCurrentNote() {
   saveSavedNotes(notes);
   renderSavedNotes();
 
-  // Visual feedback
-  saveBtn.textContent = 'Saved!';
-  setTimeout(() => (saveBtn.textContent = 'Save Note'), 1500);
+  // Show toast confirmation
+  showToast('Note saved');
 }
 
 /**
@@ -1088,6 +1282,7 @@ function deleteSavedNote(index) {
   notes.splice(index, 1);
   saveSavedNotes(notes);
   renderSavedNotes();
+  showToast('Note deleted');
 }
 
 /**
@@ -1101,12 +1296,8 @@ async function copySavedNote(index) {
   const copyText = formatNoteForClipboard(note);
   await navigator.clipboard.writeText(copyText);
 
-  // Visual feedback
-  const noteEl = savedNotesList.querySelector(`[data-index="${index}"] .copy`);
-  if (noteEl) {
-    noteEl.textContent = 'Copied!';
-    setTimeout(() => (noteEl.textContent = 'Copy'), 1500);
-  }
+  // Show toast confirmation
+  showToast('Copied to clipboard');
 }
 
 /**
@@ -1116,6 +1307,7 @@ function clearAllNotes() {
   if (confirm('Delete all saved notes? This cannot be undone.')) {
     saveSavedNotes([]);
     renderSavedNotes();
+    showToast('All notes cleared');
   }
 }
 
