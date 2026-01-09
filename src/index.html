@@ -44,10 +44,10 @@
         <h1>Traders Voice</h1>
       </div>
       <div class="header-actions">
-        <button class="icon-btn" id="helpBtn" title="Examples & Tips">?</button>
-        <button class="icon-btn" id="aboutBtn" title="About">i</button>
+        <button class="icon-btn" id="helpBtn" title="Examples & Tips" aria-label="Examples and Tips">?</button>
+        <button class="icon-btn" id="aboutBtn" title="About" aria-label="About Traders Voice">i</button>
         <div class="model-selector">
-          <select class="model-select" id="modelSelect">
+          <select class="model-select" id="modelSelect" aria-label="Select AI model">
             <optgroup label="English">
               <option value="Xenova/whisper-small.en">small.en (244MB) - Best</option>
               <option value="Xenova/whisper-base.en" selected>base.en (77MB) - Balanced</option>
@@ -67,7 +67,7 @@
     <div class="main-layout">
       <div class="left-panel">
         <div class="record-section">
-          <button class="record-btn idle" id="recordBtn">
+          <button class="record-btn idle" id="recordBtn" aria-label="Start recording">
             <div class="record-icon"></div>
           </button>
           <div class="duration" id="duration" style="display: none;">0:00</div>

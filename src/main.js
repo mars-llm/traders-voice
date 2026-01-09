@@ -7,7 +7,7 @@
 
 import { pipeline, env } from '@huggingface/transformers';
 import { extractTradeInfo, generateTradeSummary } from './tradeExtractor.js';
-import { createPriceLevelChart } from './priceLevelChart.js';
+import { createPriceLevelChart, calculateRiskReward } from './priceLevelChart.js';
 import {
   MAX_SAVED_NOTES,
   STORAGE_KEY,
@@ -549,35 +549,18 @@ function formatPercent(value) {
   return `${sign}${value.toFixed(2)}%`;
 }
 
-/**
- * Calculate risk-reward ratio
- */
-function calculateRiskReward(entry, stopLoss, takeProfit) {
-  if (!entry || !stopLoss || !takeProfit) return null;
-  const risk = Math.abs(entry - stopLoss);
-  const reward = Math.abs(takeProfit - entry);
-  if (risk === 0) return null;
-  return reward / risk;
-}
 
 /**
- * Render trade card with extracted info
+ * Build trade card header HTML with ticker, direction, and meta badges
  */
-function renderTradeCard(trade) {
-  if (!trade) {
-    tradeCard.classList.remove('visible');
-    tradeCard.innerHTML = '';
-    updateRightPanelContent();
-    return;
-  }
-
+function buildTradeCardHeader(trade, collapsed) {
   // Determine trade direction
   // Prefer tradeType (long/short) over action (buy/sell) for display
   const displayAction = trade.tradeType || trade.action || '';
   const directionClass = trade.action === 'buy' ? 'long' : trade.action === 'sell' ? 'short' : displayAction.toLowerCase();
   const directionText = displayAction.toUpperCase();
 
-  // Build header with ticker, exchange, and timeframe
+  // Build meta badges for exchange and timeframe
   let metaBadges = '';
   if (trade.exchange) {
     metaBadges += `<span class="trade-card-badge">${trade.exchange}</span>`;
@@ -586,7 +569,23 @@ function renderTradeCard(trade) {
     metaBadges += `<span class="trade-card-badge">${trade.timeframe}</span>`;
   }
 
-  // Build price levels grid
+  return `
+    <div class="trade-card-header">
+      <div class="trade-card-ticker-group">
+        ${trade.ticker ? `<div class="trade-card-ticker copyable-value" data-copy="${trade.ticker}">${trade.ticker}</div>` : '<div class="trade-card-ticker">Trade</div>'}
+        ${metaBadges ? `<div class="trade-card-meta">${metaBadges}</div>` : ''}
+      </div>
+      <div class="trade-card-header-actions">
+        ${directionText ? `<div class="trade-card-direction ${directionClass}">${directionText}</div>` : ''}
+        <button class="trade-card-collapse-btn" title="${collapsed ? 'Expand' : 'Collapse'}">${collapsed ? '▶' : '▼'}</button>
+      </div>
+    </div>`;
+}
+
+/**
+ * Build price levels section HTML (entry, stop loss, take profit, R:R)
+ */
+function buildPriceLevelsSection(trade) {
   let pricesHtml = '';
 
   if (trade.price) {
@@ -618,8 +617,8 @@ function renderTradeCard(trade) {
   }
 
   // Calculate and display R:R ratio
-  const rrRatio = calculateRiskReward(trade.price, trade.stopLoss, trade.takeProfit);
-  if (rrRatio !== null) {
+  const rrRatio = calculateRiskReward(trade.price, trade.stopLoss, trade.takeProfit, trade.action);
+  if (rrRatio !== null && rrRatio !== 0) {
     pricesHtml += `
       <div class="trade-price-item">
         <span class="trade-price-label">R:R Ratio</span>
@@ -627,7 +626,13 @@ function renderTradeCard(trade) {
       </div>`;
   }
 
-  // Build position details section
+  return pricesHtml ? `<div class="trade-card-prices">${pricesHtml}</div>` : '';
+}
+
+/**
+ * Build position details section HTML (position size, quantity, leverage)
+ */
+function buildPositionDetailsSection(trade) {
   let positionHtml = '';
 
   if (trade.positionSize) {
@@ -655,44 +660,65 @@ function renderTradeCard(trade) {
       </div>`;
   }
 
-  // Build indicators section
-  let indicatorsHtml = '';
-  if (trade.indicators && Array.isArray(trade.indicators) && trade.indicators.length > 0) {
-    const indicatorBadges = trade.indicators
-      .map(ind => `<span class="trade-indicator-badge">${ind}</span>`)
-      .join('');
-    indicatorsHtml = `
-      <div class="trade-card-indicators">
-        <div class="trade-indicators-label">Indicators</div>
-        <div class="trade-indicators-list">${indicatorBadges}</div>
-      </div>`;
+  return positionHtml ? `<div class="trade-card-position">${positionHtml}</div>` : '';
+}
+
+/**
+ * Build indicators section HTML
+ */
+function buildIndicatorsSection(trade) {
+  if (!trade.indicators || !Array.isArray(trade.indicators) || trade.indicators.length === 0) {
+    return '';
   }
 
-  // Generate price chart if we have the necessary data
-  let chartHtml = '';
-  if (trade.price && trade.stopLoss && trade.takeProfit && trade.action) {
-    const chartSvg = createPriceLevelChart(trade);
-    if (chartSvg) {
-      chartHtml = `<div class="price-chart-container">${chartSvg}</div>`;
-    }
+  const indicatorBadges = trade.indicators
+    .map(ind => `<span class="trade-indicator-badge">${ind}</span>`)
+    .join('');
+
+  return `
+    <div class="trade-card-indicators">
+      <div class="trade-indicators-label">Indicators</div>
+      <div class="trade-indicators-list">${indicatorBadges}</div>
+    </div>`;
+}
+
+/**
+ * Build price chart section HTML
+ */
+function buildChartSection(trade) {
+  if (!trade.price || !trade.stopLoss || !trade.takeProfit || !trade.action) {
+    return '';
   }
 
-  // Build the complete trade card
+  const chartSvg = createPriceLevelChart(trade);
+  return chartSvg ? `<div class="price-chart-container">${chartSvg}</div>` : '';
+}
+
+/**
+ * Render trade card with extracted info
+ */
+function renderTradeCard(trade) {
+  if (!trade) {
+    tradeCard.classList.remove('visible');
+    tradeCard.innerHTML = '';
+    updateRightPanelContent();
+    return;
+  }
+
+  // Build each section using helper functions
+  const headerHtml = buildTradeCardHeader(trade, tradeCardCollapsed);
+  const pricesHtml = buildPriceLevelsSection(trade);
+  const positionHtml = buildPositionDetailsSection(trade);
+  const indicatorsHtml = buildIndicatorsSection(trade);
+  const chartHtml = buildChartSection(trade);
+
+  // Assemble the complete trade card
   tradeCard.innerHTML = `
     <div class="trade-card-content ${tradeCardCollapsed ? 'trade-card-collapsed' : ''}">
-      <div class="trade-card-header">
-        <div class="trade-card-ticker-group">
-          ${trade.ticker ? `<div class="trade-card-ticker copyable-value" data-copy="${trade.ticker}">${trade.ticker}</div>` : '<div class="trade-card-ticker">Trade</div>'}
-          ${metaBadges ? `<div class="trade-card-meta">${metaBadges}</div>` : ''}
-        </div>
-        <div class="trade-card-header-actions">
-          ${directionText ? `<div class="trade-card-direction ${directionClass}">${directionText}</div>` : ''}
-          <button class="trade-card-collapse-btn" title="${tradeCardCollapsed ? 'Expand' : 'Collapse'}">${tradeCardCollapsed ? '▶' : '▼'}</button>
-        </div>
-      </div>
+      ${headerHtml}
       <div class="trade-card-body">
-        ${pricesHtml ? `<div class="trade-card-prices">${pricesHtml}</div>` : ''}
-        ${positionHtml ? `<div class="trade-card-position">${positionHtml}</div>` : ''}
+        ${pricesHtml}
+        ${positionHtml}
         ${indicatorsHtml}
         ${chartHtml}
         <div class="trade-summary">${generateTradeSummary(trade)}</div>
@@ -771,6 +797,25 @@ tradeCard.addEventListener('click', async (e) => {
 // Note: blobToBase64 and base64ToBlob are imported from savedNotes.js
 
 /**
+ * Cleanup audio playback state and UI
+ */
+function cleanupAudio() {
+  if (currentlyPlayingAudio) {
+    currentlyPlayingAudio.pause();
+    currentlyPlayingAudio = null;
+  }
+  if (currentAudioURL) {
+    URL.revokeObjectURL(currentAudioURL);
+    currentAudioURL = null;
+  }
+  // Reset all play buttons
+  document.querySelectorAll('.play-btn').forEach(btn => {
+    btn.textContent = '▶';
+    btn.classList.remove('playing');
+  });
+}
+
+/**
  * Play audio from a saved note
  */
 function playNoteAudio(index) {
@@ -782,19 +827,7 @@ function playNoteAudio(index) {
   }
 
   // Stop any currently playing audio and revoke previous URL
-  if (currentlyPlayingAudio) {
-    currentlyPlayingAudio.pause();
-    currentlyPlayingAudio = null;
-    // Reset all play buttons
-    document.querySelectorAll('.play-btn').forEach(btn => {
-      btn.textContent = '▶';
-      btn.classList.remove('playing');
-    });
-  }
-  if (currentAudioURL) {
-    URL.revokeObjectURL(currentAudioURL);
-    currentAudioURL = null;
-  }
+  cleanupAudio();
 
   const blob = base64ToBlob(note.audioData);
   const url = URL.createObjectURL(blob);
@@ -811,24 +844,12 @@ function playNoteAudio(index) {
   };
 
   audio.onended = () => {
-    URL.revokeObjectURL(url);
-    currentlyPlayingAudio = null;
-    currentAudioURL = null;
-    if (playBtn) {
-      playBtn.textContent = '▶';
-      playBtn.classList.remove('playing');
-    }
+    cleanupAudio();
   };
 
   audio.onerror = () => {
-    URL.revokeObjectURL(url);
-    currentlyPlayingAudio = null;
-    currentAudioURL = null;
+    cleanupAudio();
     showError('Failed to play audio');
-    if (playBtn) {
-      playBtn.textContent = '▶';
-      playBtn.classList.remove('playing');
-    }
   };
 
   currentlyPlayingAudio = audio;
@@ -839,19 +860,7 @@ function playNoteAudio(index) {
  * Stop currently playing audio
  */
 function stopAudio() {
-  if (currentlyPlayingAudio) {
-    currentlyPlayingAudio.pause();
-    currentlyPlayingAudio = null;
-    document.querySelectorAll('.play-btn').forEach(btn => {
-      btn.textContent = '▶';
-      btn.classList.remove('playing');
-    });
-  }
-  // Revoke blob URL to prevent memory leak
-  if (currentAudioURL) {
-    URL.revokeObjectURL(currentAudioURL);
-    currentAudioURL = null;
-  }
+  cleanupAudio();
 }
 
 // Note: loadSavedNotes, saveSavedNotes, formatTimestamp, renderSavedNoteTrade

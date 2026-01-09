@@ -5,9 +5,14 @@
  */
 
 import sharp from 'sharp';
-import { mkdirSync } from 'fs';
+import { mkdirSync, existsSync } from 'fs';
 
 const SOURCE = './assets/logo.png';
+
+if (!existsSync(SOURCE)) {
+  console.error(`❌ Source image not found: ${SOURCE}`);
+  process.exit(1);
+}
 
 async function generateIcons() {
   // Ensure directories exist
@@ -17,33 +22,33 @@ async function generateIcons() {
     // Generate PWA icons from icon_big.png
     await sharp(SOURCE)
       .resize(192, 192)
-      .png({ quality: 90 })
+      .png()
       .toFile('./public/icon-192.png');
     console.log('✓ Created icon-192.png');
 
     await sharp(SOURCE)
       .resize(512, 512)
-      .png({ quality: 90 })
+      .png()
       .toFile('./public/icon-512.png');
     console.log('✓ Created icon-512.png');
 
     // Generate Apple touch icon (180x180)
     await sharp(SOURCE)
       .resize(180, 180)
-      .png({ quality: 90 })
+      .png()
       .toFile('./public/apple-touch-icon.png');
     console.log('✓ Created apple-touch-icon.png');
 
     // Generate favicons
     await sharp(SOURCE)
       .resize(32, 32)
-      .png({ quality: 90 })
+      .png()
       .toFile('./public/favicon-32.png');
     console.log('✓ Created favicon-32.png');
 
     await sharp(SOURCE)
       .resize(16, 16)
-      .png({ quality: 90 })
+      .png()
       .toFile('./public/favicon-16.png');
     console.log('✓ Created favicon-16.png');
 
