@@ -60,8 +60,9 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // Exclude WASM from precache (too large) - it gets cached at runtime instead
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // Exclude WASM and large images from precache
+        globPatterns: ['**/*.{js,css,html,ico,svg}'],
+        globIgnores: ['**/hero.png', '**/hero.jpg'],
         runtimeCaching: [
           {
             // Cache WASM files at runtime with CacheFirst strategy
