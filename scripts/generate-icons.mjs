@@ -7,8 +7,7 @@
 import sharp from 'sharp';
 import { mkdirSync } from 'fs';
 
-const SOURCE = './assets/icon_big.png';
-const FAVICON_SOURCE = './assets/favicon.png';
+const SOURCE = './assets/logo.png';
 
 async function generateIcons() {
   // Ensure directories exist
@@ -35,14 +34,14 @@ async function generateIcons() {
       .toFile('./public/apple-touch-icon.png');
     console.log('✓ Created apple-touch-icon.png');
 
-    // Copy and optimize favicon
-    await sharp(FAVICON_SOURCE)
+    // Generate favicons
+    await sharp(SOURCE)
       .resize(32, 32)
       .png({ quality: 90 })
       .toFile('./public/favicon-32.png');
     console.log('✓ Created favicon-32.png');
 
-    await sharp(FAVICON_SOURCE)
+    await sharp(SOURCE)
       .resize(16, 16)
       .png({ quality: 90 })
       .toFile('./public/favicon-16.png');
