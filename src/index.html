@@ -52,18 +52,21 @@
         <button class="icon-btn" id="aboutBtn" title="About" aria-label="About Traders Voice">i</button>
         <div class="model-selector">
           <select class="model-select" id="modelSelect" aria-label="Select AI model">
-            <optgroup label="English">
-              <option value="Xenova/whisper-small.en">small.en (244MB) - Best</option>
-              <option value="Xenova/whisper-base.en" selected>base.en (77MB) - Balanced</option>
-              <option value="Xenova/whisper-tiny.en">tiny.en (41MB) - Fastest</option>
+            <optgroup label="English Only">
+              <option value="Xenova/whisper-small.en" data-model="small.en">Best accuracy (244MB)</option>
+              <option value="Xenova/whisper-base.en" data-model="base.en" selected>Balanced (77MB)</option>
+              <option value="Xenova/whisper-tiny.en" data-model="tiny.en">Fast (41MB)</option>
             </optgroup>
             <optgroup label="Multilingual">
-              <option value="Xenova/whisper-small">small (244MB) - Best</option>
-              <option value="Xenova/whisper-base">base (75MB) - Balanced</option>
-              <option value="Xenova/whisper-tiny">tiny (39MB) - Fastest</option>
+              <option value="Xenova/whisper-small" data-model="small">Best accuracy (244MB)</option>
+              <option value="Xenova/whisper-base" data-model="base">Balanced (75MB)</option>
+              <option value="Xenova/whisper-tiny" data-model="tiny">Fast (39MB)</option>
             </optgroup>
           </select>
-          <div class="model-info" id="modelInfo">English only</div>
+          <div class="model-info" id="modelInfo">
+            <span class="model-info-text">English only</span>
+            <button class="model-info-btn" id="modelInfoBtn" title="Model info" aria-label="Model information">?</button>
+          </div>
         </div>
       </div>
     </div>
@@ -85,9 +88,13 @@
           <div class="empty-state-hero">
             <img src="hero.png" alt="" class="empty-state-hero-img">
             <div class="empty-state-hero-overlay">
-              <h2 class="empty-state-headline">MASTER THE <span class="highlight">MARKET</span></h2>
-              <div class="empty-state-text">Record a trade idea to see it parsed here</div>
-              <div class="empty-state-hint">Your transcription and trade details will appear in this panel</div>
+              <h2 class="empty-state-headline">Hands-free trade journaling, <span class="highlight">fully local</span></h2>
+              <div class="empty-state-text">Speak a trade idea. Get a clean transcript plus structured fields—ticker, entry, stop, targets, R:R.</div>
+              <div class="empty-state-features">
+                <span class="feature-tag">100% Local</span>
+                <span class="feature-tag">Works Offline</span>
+                <span class="feature-tag">Structured Output</span>
+              </div>
             </div>
           </div>
         </div>

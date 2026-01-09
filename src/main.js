@@ -112,12 +112,34 @@ let animationId = null;
  * Update model info display
  */
 function updateModelInfo() {
-  const isEnglish = modelSelect.value.includes('.en');
-  modelInfo.textContent = isEnglish ? 'English only' : 'Multilingual';
+  const isEnglishOnly = modelSelect.value.includes('.en');
+  const infoText = modelInfo.querySelector('.model-info-text');
+  if (infoText) {
+    infoText.textContent = isEnglishOnly ? 'English only' : 'Multilingual';
+  }
 }
 
 // Initialize model info
 updateModelInfo();
+
+// Model info button - show tooltip with model details
+const modelInfoBtn = document.getElementById('modelInfoBtn');
+if (modelInfoBtn) {
+  modelInfoBtn.addEventListener('click', () => {
+    const selectedOption = modelSelect.options[modelSelect.selectedIndex];
+    const modelName = selectedOption.dataset.model || selectedOption.value;
+    const isEnglishOnly = modelSelect.value.includes('.en');
+
+    alert(
+      `Model: ${modelName}\n\n` +
+      `• Fast: Starts quickest, good for short notes\n` +
+      `• Balanced: Good speed and accuracy (recommended)\n` +
+      `• Best accuracy: Most accurate, larger download\n\n` +
+      `${isEnglishOnly ? 'English optimized' : 'Supports multiple languages'}\n` +
+      `Downloaded once, then cached for offline use.`
+    );
+  });
+}
 
 /**
  * Format seconds as M:SS

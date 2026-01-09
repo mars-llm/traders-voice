@@ -50,6 +50,7 @@
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
+  --radius-full: 9999px;
 
   /* Animation */
   --ease: cubic-bezier(0.25, 1, 0.5, 1);
@@ -180,10 +181,36 @@ body {
 }
 
 .model-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
   font-size: 11px;
   color: var(--fg-faint);
   letter-spacing: 0.02em;
   white-space: nowrap;
+}
+
+.model-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease);
+}
+
+.model-info-btn:hover {
+  background: var(--bg-hover);
+  color: var(--fg-primary);
+  border-color: var(--fg-muted);
 }
 
 /* Record Section */
@@ -1421,6 +1448,27 @@ body {
   line-height: 1.5;
 }
 
+.empty-state-features {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+
+.feature-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+}
+
 /* Hide empty state when results are showing */
 /* Use .has-content class for broader browser support (JS fallback) */
 .right-panel.has-content .empty-state,
@@ -1546,8 +1594,8 @@ body {
     height: 28px;
   }
 
-  .model-info {
-    display: none; /* Hide "English only" on mobile to save space */
+  .model-info-text {
+    display: none; /* Hide text label on mobile, keep info button */
   }
 
   /* Record section: Adjust spacing */
