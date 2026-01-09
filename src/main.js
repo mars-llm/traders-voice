@@ -79,6 +79,8 @@ const saveBtn = document.getElementById('saveBtn');
 const savedNotesSection = document.getElementById('savedNotesSection');
 const savedNotesList = document.getElementById('savedNotesList');
 const clearAllNotesBtn = document.getElementById('clearAllNotesBtn');
+const speakingTipsToggle = document.getElementById('speakingTipsToggle');
+const speakingTipsContent = document.getElementById('speakingTipsContent');
 
 // Note: MAX_SAVED_NOTES and STORAGE_KEY are imported from savedNotes.js
 
@@ -116,7 +118,7 @@ function updateModelInfo() {
   const isEnglishOnly = modelSelect.value.includes('.en');
   const infoText = modelInfo.querySelector('.model-info-text');
   if (infoText) {
-    infoText.textContent = isEnglishOnly ? 'English only' : 'Multilingual';
+    infoText.textContent = isEnglishOnly ? 'English optimized' : 'Multi-language → English';
   }
 }
 
@@ -131,12 +133,16 @@ if (modelInfoBtn) {
     const modelName = selectedOption.dataset.model || selectedOption.value;
     const isEnglishOnly = modelSelect.value.includes('.en');
 
+    const languageInfo = isEnglishOnly
+      ? 'English optimized - Faster and more accurate for English speech'
+      : 'Multi-language support - Can transcribe many languages, output in English';
+
     alert(
       `Model: ${modelName}\n\n` +
       `• Fast: Starts quickest, good for short notes\n` +
       `• Balanced: Good speed and accuracy (recommended)\n` +
       `• Best accuracy: Most accurate, larger download\n\n` +
-      `${isEnglishOnly ? 'English optimized' : 'Supports multiple languages'}\n` +
+      `${languageInfo}\n\n` +
       `Downloaded once, then cached for offline use.`
     );
   });
@@ -649,7 +655,15 @@ function buildTradeCardHeader(trade, collapsed) {
   // Determine trade direction
   // Prefer tradeType (long/short) over action (buy/sell) for display
   const displayAction = trade.tradeType || trade.action || '';
-  const directionClass = trade.action === 'buy' ? 'long' : trade.action === 'sell' ? 'short' : displayAction.toLowerCase();
+
+  // Determine CSS class for styling
+  let directionClass = displayAction.toLowerCase();
+  if (trade.action === 'buy') {
+    directionClass = 'long';
+  } else if (trade.action === 'sell') {
+    directionClass = 'short';
+  }
+
   const directionText = displayAction.toUpperCase();
 
   // Build meta badges for exchange and timeframe
@@ -964,12 +978,21 @@ function stopAudio() {
 function renderSavedNotes() {
   const notes = loadSavedNotes();
 
+  savedNotesSection.classList.add('visible');
+
   if (notes.length === 0) {
-    savedNotesSection.classList.remove('visible');
+    savedNotesList.innerHTML = `
+      <div class="saved-notes-empty">
+        <p class="empty-state-title">No saved notes yet</p>
+        <div class="empty-state-actions">
+          <button class="btn btn-primary" id="emptyStateRecordBtn">Record a note</button>
+          <button class="btn btn-secondary" id="emptyStateDemoBtn">Try a demo</button>
+        </div>
+        <p class="empty-state-note">Notes are saved locally in your browser</p>
+      </div>
+    `;
     return;
   }
-
-  savedNotesSection.classList.add('visible');
 
   savedNotesList.innerHTML = notes
     .map(
@@ -1083,6 +1106,24 @@ saveBtn.addEventListener('click', saveCurrentNote);
 clearAllNotesBtn.addEventListener('click', clearAllNotes);
 
 savedNotesList.addEventListener('click', (e) => {
+  // Handle empty state buttons
+  if (e.target.id === 'emptyStateRecordBtn') {
+    recordBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    recordBtn.focus();
+    return;
+  }
+
+  if (e.target.id === 'emptyStateDemoBtn') {
+    const demo = getNextDemo();
+    transcription.textContent = demo.transcript;
+    resultSection.classList.add('visible');
+    currentTradeInfo = demo.trade;
+    renderTradeCard(demo.trade);
+    resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  // Handle saved note actions
   const noteEl = e.target.closest('.saved-note');
   if (!noteEl) return;
 
@@ -1104,6 +1145,138 @@ savedNotesList.addEventListener('click', (e) => {
 
 // Initialize saved notes on page load
 renderSavedNotes();
+
+// ============================================
+// PRIVACY TOOLTIP
+// ============================================
+
+/**
+ * Create and show privacy tooltip
+ */
+function showPrivacyTooltip(buttonEl) {
+  // Remove any existing tooltip
+  const existingTooltip = document.querySelector('.privacy-tooltip');
+  if (existingTooltip) {
+    existingTooltip.remove();
+  }
+
+  // Create tooltip element
+  const tooltip = document.createElement('div');
+  tooltip.className = 'privacy-tooltip';
+  tooltip.innerHTML = `
+    <div class="privacy-tooltip-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      100% Private
+    </div>
+    <ul class="privacy-tooltip-list">
+      <li>Audio and transcripts stay in your browser</li>
+      <li>No tracking, no cookies, no servers</li>
+      <li>Model downloads once, then works offline</li>
+    </ul>
+  `;
+  document.body.appendChild(tooltip);
+
+  // Position tooltip above the button
+  const buttonRect = buttonEl.getBoundingClientRect();
+  const tooltipRect = tooltip.getBoundingClientRect();
+
+  // Calculate position (centered above button with some spacing)
+  let left = buttonRect.left + buttonRect.width / 2 - tooltipRect.width / 2;
+  let top = buttonRect.top - tooltipRect.height - 8;
+
+  // Keep tooltip within viewport bounds
+  const margin = 8;
+  if (left < margin) {
+    left = margin;
+  } else if (left + tooltipRect.width > window.innerWidth - margin) {
+    left = window.innerWidth - tooltipRect.width - margin;
+  }
+
+  if (top < margin) {
+    // If not enough space above, show below
+    top = buttonRect.bottom + 8;
+  }
+
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+
+  // Show tooltip with fade-in
+  requestAnimationFrame(() => {
+    tooltip.classList.add('visible');
+  });
+
+  return tooltip;
+}
+
+/**
+ * Hide privacy tooltip
+ */
+function hidePrivacyTooltip() {
+  const tooltip = document.querySelector('.privacy-tooltip');
+  if (tooltip) {
+    tooltip.classList.remove('visible');
+    setTimeout(() => tooltip.remove(), 200);
+  }
+}
+
+// Privacy info button handler
+const privacyInfoBtn = document.getElementById('privacyInfoBtn');
+if (privacyInfoBtn) {
+  let tooltipVisible = false;
+
+  privacyInfoBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    if (tooltipVisible) {
+      hidePrivacyTooltip();
+      tooltipVisible = false;
+    } else {
+      showPrivacyTooltip(privacyInfoBtn);
+      tooltipVisible = true;
+    }
+  });
+
+  // Close tooltip when clicking outside
+  document.addEventListener('click', (e) => {
+    if (tooltipVisible && !e.target.closest('.privacy-tooltip') && e.target !== privacyInfoBtn) {
+      hidePrivacyTooltip();
+      tooltipVisible = false;
+    }
+  });
+
+  // Close tooltip on scroll
+  window.addEventListener('scroll', () => {
+    if (tooltipVisible) {
+      hidePrivacyTooltip();
+      tooltipVisible = false;
+    }
+  });
+}
+
+// ============================================
+// SPEAKING TIPS TOGGLE
+// ============================================
+
+/**
+ * Toggle speaking tips visibility
+ */
+if (speakingTipsToggle && speakingTipsContent) {
+  speakingTipsToggle.addEventListener('click', () => {
+    const isExpanded = speakingTipsToggle.getAttribute('aria-expanded') === 'true';
+    const newExpandedState = !isExpanded;
+
+    speakingTipsToggle.setAttribute('aria-expanded', newExpandedState);
+    speakingTipsContent.classList.toggle('visible');
+
+    // Update arrow direction
+    const arrow = speakingTipsToggle.querySelector('.toggle-arrow');
+    if (arrow) {
+      arrow.textContent = newExpandedState ? '▲' : '▼';
+    }
+  });
+}
 
 // ============================================
 // MODAL FUNCTIONALITY
@@ -1179,7 +1352,7 @@ const helpModalBody = `
       <li>Mention the exchange: <strong>Binance, Coinbase, Kraken</strong></li>
       <li>Include timeframes: <strong>1-hour, 4-hour, daily</strong></li>
       <li>Name indicators: <strong>RSI, MACD, EMA, VWAP</strong></li>
-      <li>Foreign languages are supported — spoken content will be transcribed and translated to English</li>
+      <li>Multilingual models can transcribe other languages and output English (select from dropdown)</li>
       <li>The Space key starts/stops recording. If it doesn't respond, click elsewhere first to remove focus from dropdowns or buttons.</li>
     </ul>
   </div>

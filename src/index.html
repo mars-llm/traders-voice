@@ -80,7 +80,42 @@
           <div class="duration" id="duration" style="display: none;">0:00</div>
           <div class="status-text" id="statusText">Click to record</div>
         </div>
-        <div class="hint">Press Space to start/stop recording</div>
+        <div class="hint">
+          Press Space to start/stop recording
+          <button class="privacy-info-btn" id="privacyInfoBtn" title="Privacy info" aria-label="Privacy information">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Speaking Tips Section -->
+        <div class="speaking-tips">
+          <button class="speaking-tips-toggle" id="speakingTipsToggle" aria-expanded="false">
+            Speaking tips <span class="toggle-arrow">▶</span>
+          </button>
+          <div class="speaking-tips-content" id="speakingTipsContent">
+            <div class="tips-header">For best results:</div>
+            <ul class="tips-compact-list">
+              <li><strong>Action first:</strong> "Long Bitcoin" or "Short EURUSD"</li>
+              <li><strong>Entry price:</strong> State clearly: "at 95,000"</li>
+              <li><strong>Risk management:</strong> Include stop loss and take profit</li>
+              <li><strong>Timeframe:</strong> "4-hour chart", "daily", "15-minute"</li>
+              <li><strong>Indicators:</strong> Name them: RSI, MACD, EMA, VWAP</li>
+            </ul>
+            <div class="tips-examples">
+              <div class="tip-example">
+                <span class="tip-example-label">Crypto:</span>
+                "Long Bitcoin at 95,000, stop loss 92,000, take profit 105,000"
+              </div>
+              <div class="tip-example">
+                <span class="tip-example-label">Forex:</span>
+                "Short EURUSD on 4-hour chart, entry 1.0850, target 1.0750"
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="right-panel">
