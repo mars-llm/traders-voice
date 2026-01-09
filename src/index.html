@@ -9,8 +9,13 @@
       var base = document.querySelector('base')?.href || location.pathname.replace(/\/[^\/]*$/, '/');
       if (!base.endsWith('/')) base += '/';
       var swPath = base + 'coi-serviceworker.js';
-      // Set the script path for coi-serviceworker to use (since document.currentScript is null for dynamic scripts)
-      window.coi = { scriptPath: swPath };
+      // Configure coi-serviceworker:
+      // - scriptPath: for dynamic script loading
+      // - coepCredentialless: use 'credentialless' mode (more compatible with CDNs)
+      window.coi = {
+        scriptPath: swPath,
+        coepCredentialless: function() { return true; }
+      };
       var script = document.createElement('script');
       script.src = swPath;
       script.onerror = function() { console.warn('coi-serviceworker.js failed to load'); };

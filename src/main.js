@@ -1102,7 +1102,8 @@ savedNotesList.addEventListener('click', (e) => {
   // Handle empty state buttons
   if (e.target.id === 'emptyStateRecordBtn') {
     recordBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    recordBtn.focus();
+    // Actually start recording, not just focus
+    setTimeout(() => startRecording(), 300);
     return;
   }
 
