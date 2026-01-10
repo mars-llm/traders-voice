@@ -67,8 +67,6 @@ const saveBtn = document.getElementById('saveBtn');
 const savedNotesSection = document.getElementById('savedNotesSection');
 const savedNotesList = document.getElementById('savedNotesList');
 const clearAllNotesBtn = document.getElementById('clearAllNotesBtn');
-const speakingTipsToggle = document.getElementById('speakingTipsToggle');
-const speakingTipsContent = document.getElementById('speakingTipsContent');
 
 // Note: MAX_SAVED_NOTES and STORAGE_KEY are imported from savedNotes.js
 
@@ -1489,9 +1487,6 @@ function setupCollapsibleSection(toggleBtn, contentEl) {
   });
 }
 
-// Setup speaking tips toggle
-setupCollapsibleSection(speakingTipsToggle, speakingTipsContent);
-
 // ============================================
 // MODAL FUNCTIONALITY
 // ============================================
@@ -1650,28 +1645,19 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============================================
-// LANDING SECTION FAQ TOGGLE
+// FOOTER FAQ TOGGLE
 // ============================================
 
 const faqToggle = document.getElementById('faqToggle');
 const faqContent = document.getElementById('faqContent');
 
 if (faqToggle && faqContent) {
-  // Set initial state based on screen size
-  const isDesktop = window.innerWidth >= 900;
-  faqToggle.setAttribute('aria-expanded', String(isDesktop));
-  faqContent.classList.toggle('visible', isDesktop);
+  // Set initial state: collapsed on mobile, can be toggled
+  faqToggle.setAttribute('aria-expanded', 'false');
+  faqContent.classList.remove('visible');
 
   // Setup toggle behavior
   setupCollapsibleSection(faqToggle, faqContent);
-
-  // Re-expand on desktop resize
-  window.addEventListener('resize', () => {
-    if (window.innerWidth >= 900) {
-      faqToggle.setAttribute('aria-expanded', 'true');
-      faqContent.classList.add('visible');
-    }
-  });
 }
 
 // ============================================================================
@@ -1704,88 +1690,3 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// ============================================================================
-// COACH PROMPTS
-// ============================================================================
-
-const COACH_PROMPTS = [
-  "State invalidation first: 'Stop is… because…'",
-  "Name timeframe + context: 'On the 1H…'",
-  "What would make you exit early?",
-  "Include your conviction level: high, medium, low",
-  "Mention the catalyst: earnings, news, breakout?",
-  "State risk in dollars, not just percentage",
-  "What's the reward-to-risk ratio?",
-  "Is this a trend trade or counter-trend?",
-  "Note market conditions: trending, ranging, volatile",
-  "Include your entry trigger: 'I'll enter when…'",
-  "What's your position size strategy?",
-  "Are you scaling in or all at once?",
-  "What indicators confirm this setup?",
-  "Where's the next resistance or support?",
-  "What's your target time horizon?",
-  "Is your stop beyond recent volatility?",
-  "What's your plan if price consolidates?",
-  "Are you risking 1%, 2%, or more?",
-  "Does volume support this move?",
-  "What's the broader market context?"
-];
-
-const coachPrompt = document.getElementById('coachPrompt');
-const coachPromptText = document.getElementById('coachPromptText');
-const nextPromptBtn = document.getElementById('nextPromptBtn');
-const dismissPromptBtn = document.getElementById('dismissPromptBtn');
-
-/**
- * Get a random prompt from the list
- */
-function getRandomPrompt() {
-  const randomIndex = Math.floor(Math.random() * COACH_PROMPTS.length);
-  return COACH_PROMPTS[randomIndex];
-}
-
-/**
- * Show the coach prompt with current or new random prompt
- */
-function showCoachPrompt() {
-  if (localStorage.getItem('traders-voice-coach-dismissed') === 'true') {
-    coachPrompt.classList.remove('visible');
-    return;
-  }
-
-  const currentPromptText = sessionStorage.getItem('traders-voice-current-prompt') || getRandomPrompt();
-  sessionStorage.setItem('traders-voice-current-prompt', currentPromptText);
-  coachPromptText.textContent = currentPromptText;
-  coachPrompt.classList.add('visible');
-}
-
-/**
- * Load next prompt
- */
-function loadNextPrompt() {
-  const newPrompt = getRandomPrompt();
-  sessionStorage.setItem('traders-voice-current-prompt', newPrompt);
-  coachPromptText.textContent = newPrompt;
-}
-
-/**
- * Dismiss prompts permanently
- */
-function dismissCoachPrompts() {
-  localStorage.setItem('traders-voice-coach-dismissed', 'true');
-  sessionStorage.removeItem('traders-voice-current-prompt');
-  coachPrompt.classList.remove('visible');
-  showToast('Coach prompts dismissed');
-}
-
-// Event listeners
-if (nextPromptBtn) {
-  nextPromptBtn.addEventListener('click', loadNextPrompt);
-}
-
-if (dismissPromptBtn) {
-  dismissPromptBtn.addEventListener('click', dismissCoachPrompts);
-}
-
-// Initialize coach prompt on page load
-showCoachPrompt();
