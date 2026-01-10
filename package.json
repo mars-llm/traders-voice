@@ -9,12 +9,17 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
     "generate-icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.5.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@resvg/resvg-js": "^2.6.2",
     "coi-serviceworker": "^0.1.7",
     "jsdom": "^27.4.0",
