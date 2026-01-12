@@ -1,0 +1,125 @@
+/* Theme System - Light Theme Variables */
+
+[data-theme="light"] {
+  /* Color System - Light Foundation */
+  --bg-base: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f1f5f9;
+  --bg-hover: #e2e8f0;
+
+  /* Foreground Hierarchy */
+  --fg-primary: #0f172a;
+  --fg-secondary: #334155;
+  --fg-muted: #64748b;
+  --fg-faint: #94a3b8;
+
+  /* Borders */
+  --border: rgba(15, 23, 42, 0.08);
+  --border-subtle: rgba(15, 23, 42, 0.05);
+  --border-focus: rgba(15, 23, 42, 0.16);
+
+  /* Semantic Colors - Keep accent consistent */
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-muted: rgba(59, 130, 246, 0.10);
+  --success: #16a34a;
+  --success-muted: #dcfce7;
+  --success-border: rgba(22, 163, 74, 0.3);
+  --error: #dc2626;
+  --error-muted: #fee2e2;
+  --error-border: rgba(220, 38, 38, 0.3);
+  --error-glow: rgba(220, 38, 38, 0.08);
+  --error-light: #ef4444;
+  --highlight-gold: #b8942a;
+}
+
+/* Smooth theme transitions (skip on initial load) */
+body.theme-transitions-enabled {
+  transition: background-color var(--duration-normal) var(--ease),
+              color var(--duration-normal) var(--ease);
+}
+
+body.theme-transitions-enabled * {
+  transition: background-color var(--duration-normal) var(--ease),
+              color var(--duration-normal) var(--ease),
+              border-color var(--duration-normal) var(--ease);
+}
+
+/* Theme Toggle Button Styles */
+.theme-icon {
+  display: none;
+}
+
+.theme-icon-sun {
+  display: block;
+}
+
+[data-theme="light"] .theme-icon-sun {
+  display: none;
+}
+
+[data-theme="light"] .theme-icon-moon {
+  display: block;
+}
+
+/* Light theme specific adjustments */
+[data-theme="light"] .modal-backdrop {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+[data-theme="light"] .empty-state-hero-overlay {
+  background: linear-gradient(transparent 0%, rgba(255, 255, 255, 0.92) 100%);
+}
+
+[data-theme="light"] .empty-state-headline {
+  color: var(--fg-primary);
+}
+
+[data-theme="light"] .empty-state-headline .highlight {
+  color: var(--highlight-gold);
+}
+
+[data-theme="light"] .empty-state-text {
+  color: var(--fg-secondary);
+}
+
+[data-theme="light"] .feature-tag {
+  background: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.12);
+  color: var(--fg-primary);
+}
+
+[data-theme="light"] .record-btn.idle {
+  background: var(--error);
+}
+
+[data-theme="light"] .record-btn.idle::before {
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.12) 0%, transparent 70%);
+}
+
+[data-theme="light"] .record-icon {
+  background: white;
+}
+
+[data-theme="light"] .waveform-canvas {
+  background: rgba(220, 38, 38, 0.05);
+  border-color: rgba(220, 38, 38, 0.12);
+}
+
+[data-theme="light"] .error-msg {
+  background: var(--error-muted);
+  border-color: rgba(220, 38, 38, 0.3);
+  color: #b91c1c;
+}
+
+/* Better contrast for cards in light mode */
+[data-theme="light"] .container {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .trade-card-content,
+[data-theme="light"] .transcription,
+[data-theme="light"] .saved-note {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}

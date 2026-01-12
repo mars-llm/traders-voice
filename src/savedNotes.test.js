@@ -13,6 +13,7 @@ import {
   saveSavedNotes,
   canSaveNote,
   createNote,
+  filterNotes,
 } from './savedNotes.js';
 
 describe('Constants', () => {
@@ -614,5 +615,218 @@ describe('Integration: save and load round-trip', () => {
     const loaded = loadSavedNotes(mockStorage);
 
     expect(loaded).toEqual([]);
+  });
+});
+
+describe('filterNotes', () => {
+  const createTestNote = (text, trade = null) => ({
+    id: Date.now(),
+    timestamp: Date.now(),
+    text,
+    trade,
+    audioData: null,
+  });
+
+  it('returns all notes when query is empty', () => {
+    const notes = [
+      createTestNote('Buy Bitcoin at 95k'),
+      createTestNote('Sell Ethereum at 3500'),
+    ];
+
+    const result = filterNotes(notes, '');
+
+    expect(result).toEqual(notes);
+  });
+
+  it('returns all notes when query is null', () => {
+    const notes = [createTestNote('Test note')];
+
+    const result = filterNotes(notes, null);
+
+    expect(result).toEqual(notes);
+  });
+
+  it('returns all notes when query is only whitespace', () => {
+    const notes = [createTestNote('Test note')];
+
+    const result = filterNotes(notes, '   ');
+
+    expect(result).toEqual(notes);
+  });
+
+  it('filters by transcription text (case-insensitive)', () => {
+    const notes = [
+      createTestNote('Buy Bitcoin at support'),
+      createTestNote('Sell Ethereum at resistance'),
+      createTestNote('Long Gold on breakout'),
+    ];
+
+    const result = filterNotes(notes, 'bitcoin');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].text).toBe('Buy Bitcoin at support');
+  });
+
+  it('filters by transcription text (uppercase query)', () => {
+    const notes = [
+      createTestNote('Buy bitcoin at support'),
+      createTestNote('Sell ethereum at resistance'),
+    ];
+
+    const result = filterNotes(notes, 'BITCOIN');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].text).toContain('bitcoin');
+  });
+
+  it('filters by ticker symbol', () => {
+    const notes = [
+      createTestNote('Trade idea', { ticker: 'BTC' }),
+      createTestNote('Another trade', { ticker: 'ETH' }),
+      createTestNote('Third trade', { ticker: 'EURUSD' }),
+    ];
+
+    const result = filterNotes(notes, 'btc');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].trade.ticker).toBe('BTC');
+  });
+
+  it('filters by action (buy/sell)', () => {
+    const notes = [
+      createTestNote('Trade 1', { action: 'buy' }),
+      createTestNote('Trade 2', { action: 'sell' }),
+      createTestNote('Trade 3', { action: 'buy' }),
+    ];
+
+    const result = filterNotes(notes, 'buy');
+
+    expect(result).toHaveLength(2);
+    expect(result.every((n) => n.trade.action === 'buy')).toBe(true);
+  });
+
+  it('filters by action (long/short)', () => {
+    const notes = [
+      createTestNote('Trade 1', { action: 'long' }),
+      createTestNote('Trade 2', { action: 'short' }),
+    ];
+
+    const result = filterNotes(notes, 'short');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].trade.action).toBe('short');
+  });
+
+  it('filters by timeframe', () => {
+    const notes = [
+      createTestNote('Trade 1', { timeframe: '4-hour' }),
+      createTestNote('Trade 2', { timeframe: 'daily' }),
+      createTestNote('Trade 3', { timeframe: '15-minute' }),
+    ];
+
+    const result = filterNotes(notes, '4-hour');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].trade.timeframe).toBe('4-hour');
+  });
+
+  it('filters by indicators', () => {
+    const notes = [
+      createTestNote('Trade 1', { indicators: ['RSI', 'MACD'] }),
+      createTestNote('Trade 2', { indicators: ['EMA', 'VWAP'] }),
+      createTestNote('Trade 3', { indicators: ['Bollinger Bands', 'RSI'] }),
+    ];
+
+    const result = filterNotes(notes, 'rsi');
+
+    expect(result).toHaveLength(2);
+    expect(result.every((n) => n.trade.indicators.some((i) => i.toLowerCase().includes('rsi')))).toBe(true);
+  });
+
+  it('matches partial strings', () => {
+    const notes = [
+      createTestNote('Buy Bitcoin at support level'),
+      createTestNote('Sell Ethereum'),
+    ];
+
+    const result = filterNotes(notes, 'bit');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].text).toContain('Bitcoin');
+  });
+
+  it('trims whitespace from query', () => {
+    const notes = [createTestNote('Buy Bitcoin')];
+
+    const result = filterNotes(notes, '  bitcoin  ');
+
+    expect(result).toHaveLength(1);
+  });
+
+  it('returns empty array when no matches', () => {
+    const notes = [
+      createTestNote('Buy Bitcoin'),
+      createTestNote('Sell Ethereum'),
+    ];
+
+    const result = filterNotes(notes, 'gold');
+
+    expect(result).toEqual([]);
+  });
+
+  it('searches across multiple fields', () => {
+    const note1 = createTestNote('Random text', {
+      ticker: 'BTC',
+      action: 'buy',
+      timeframe: 'daily',
+    });
+    const note2 = createTestNote('Different text', {
+      ticker: 'ETH',
+      action: 'sell',
+    });
+
+    // Should match note1 by ticker
+    const result1 = filterNotes([note1, note2], 'btc');
+    expect(result1).toHaveLength(1);
+    expect(result1[0].trade.ticker).toBe('BTC');
+
+    // Should match note1 by action
+    const result2 = filterNotes([note1, note2], 'buy');
+    expect(result2).toHaveLength(1);
+    expect(result2[0].trade.action).toBe('buy');
+
+    // Should match note1 by timeframe
+    const result3 = filterNotes([note1, note2], 'daily');
+    expect(result3).toHaveLength(1);
+    expect(result3[0].trade.timeframe).toBe('daily');
+  });
+
+  it('handles notes without trade info', () => {
+    const notes = [
+      createTestNote('Simple note without trade'),
+      createTestNote('Trade note', { ticker: 'BTC' }),
+    ];
+
+    const result = filterNotes(notes, 'simple');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].text).toBe('Simple note without trade');
+  });
+
+  it('handles undefined trade fields gracefully', () => {
+    const notes = [
+      createTestNote('Note 1', { ticker: 'BTC' }), // No action
+      createTestNote('Note 2', { action: 'buy' }), // No ticker
+    ];
+
+    // Should not throw errors
+    expect(() => filterNotes(notes, 'btc')).not.toThrow();
+    expect(() => filterNotes(notes, 'buy')).not.toThrow();
+
+    const result1 = filterNotes(notes, 'btc');
+    expect(result1).toHaveLength(1);
+
+    const result2 = filterNotes(notes, 'buy');
+    expect(result2).toHaveLength(1);
   });
 });

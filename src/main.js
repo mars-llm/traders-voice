@@ -11,6 +11,7 @@ import { createPriceLevelChart, calculateRiskReward } from './priceLevelChart.js
 import {
   MAX_SAVED_NOTES,
   STORAGE_KEY,
+  MAX_AUDIO_SIZE,
   blobToBase64,
   base64ToBlob,
   formatTimestamp,
@@ -22,11 +23,17 @@ import {
   saveSavedNotes,
   canSaveNote,
   createNote,
+  filterNotes,
 } from './savedNotes.js';
 import { getNextDemo, resetDemoCycle } from './demoData.js';
+import { initTheme, setupThemeToggle } from './theme.js';
 
 // Disable local model loading (use Hugging Face CDN)
 env.allowLocalModels = false;
+
+// Initialize theme system
+initTheme();
+setupThemeToggle();
 
 // Audio visualization constants
 const WAVEFORM_WIDTH = 200;
@@ -67,6 +74,10 @@ const saveBtn = document.getElementById('saveBtn');
 const savedNotesSection = document.getElementById('savedNotesSection');
 const savedNotesList = document.getElementById('savedNotesList');
 const clearAllNotesBtn = document.getElementById('clearAllNotesBtn');
+const currentAudioPlayBtn = document.getElementById('currentAudioPlayBtn');
+const savedNotesSearch = document.getElementById('savedNotesSearch');
+const savedNotesSearchInput = document.getElementById('savedNotesSearchInput');
+const savedNotesSearchClear = document.getElementById('savedNotesSearchClear');
 
 // Note: MAX_SAVED_NOTES and STORAGE_KEY are imported from savedNotes.js
 
@@ -89,6 +100,8 @@ let currentAudioBlob = null; // Store audio for replay
 let currentlyPlayingAudio = null; // Track playing audio element
 let currentAudioURL = null; // Track blob URL to prevent memory leaks
 let tradeCardCollapsed = false; // Track collapsed state
+let currentSearchQuery = ''; // Track current search query
+let searchDebounceTimer = null; // Debounce timer for search
 
 // Audio visualization state
 let audioContext = null;
@@ -101,11 +114,11 @@ let animationId = null;
  * Update model info display
  */
 function updateModelInfo() {
-  const isEnglishOnly = modelSelect.value.includes('.en');
   const infoText = modelInfo.querySelector('.model-info-text');
-  if (infoText) {
-    infoText.textContent = isEnglishOnly ? 'English optimized' : 'Multi-language → English';
-  }
+  if (!infoText) return;
+
+  const isEnglishOnly = modelSelect.value.includes('.en');
+  infoText.textContent = isEnglishOnly ? 'English optimized' : 'Multi-language → English';
 }
 
 // Initialize model info
@@ -416,17 +429,17 @@ function showModelError(message) {
 
   // Wire up retry handler (innerHTML creates fresh element, so no duplicate listeners)
   const retryBtn = document.getElementById('retryModelBtn');
-  if (retryBtn) {
-    retryBtn.addEventListener('click', async () => {
-      transcriber = null;
-      try {
-        await getTranscriber();
-      } catch (err) {
-        console.error('Retry failed:', err);
-        showModelError('Failed to download model. Check your connection and try again.');
-      }
-    });
-  }
+  if (!retryBtn) return;
+
+  retryBtn.addEventListener('click', async () => {
+    transcriber = null;
+    try {
+      await getTranscriber();
+    } catch (err) {
+      console.error('Retry failed:', err);
+      showModelError('Failed to download model. Check your connection and try again.');
+    }
+  });
 }
 
 /**
@@ -526,6 +539,11 @@ async function transcribe(audioBlob) {
     if (text) {
       transcription.textContent = text;
       resultSection.classList.add('visible');
+
+      // Show audio play button if audio is available
+      if (currentAudioBlob && currentAudioPlayBtn) {
+        currentAudioPlayBtn.style.display = 'flex';
+      }
 
       // Extract and display trade info (reset to expanded state)
       tradeCardCollapsed = false;
@@ -739,26 +757,14 @@ function exportAsJSON() {
  * Export data in specified format
  */
 async function exportData(format) {
-  let content = '';
-  let formatName = '';
+  const formats = {
+    text: { fn: exportAsPlainText, name: 'Plain Text' },
+    markdown: { fn: exportAsMarkdown, name: 'Markdown' },
+    json: { fn: exportAsJSON, name: 'JSON' }
+  };
 
-  switch (format) {
-    case 'text':
-      content = exportAsPlainText();
-      formatName = 'Plain Text';
-      break;
-    case 'markdown':
-      content = exportAsMarkdown();
-      formatName = 'Markdown';
-      break;
-    case 'json':
-      content = exportAsJSON();
-      formatName = 'JSON';
-      break;
-    default:
-      content = exportAsPlainText();
-      formatName = 'Plain Text';
-  }
+  const formatConfig = formats[format] || formats.text;
+  const content = formatConfig.fn();
 
   if (!content) {
     showToast('No content to export');
@@ -767,7 +773,7 @@ async function exportData(format) {
 
   try {
     await navigator.clipboard.writeText(content);
-    showToast(`Copied as ${formatName}`);
+    showToast(`Copied as ${formatConfig.name}`);
   } catch (err) {
     console.error('Failed to copy:', err);
     showToast('Failed to copy to clipboard');
@@ -807,8 +813,29 @@ clearBtn.addEventListener('click', () => {
   resultSection.classList.remove('visible');
   renderTradeCard(null);
   resetDemoCycle();
+
+  // Clean up current audio
+  currentAudioBlob = null;
+  if (currentAudioPlayBtn) {
+    currentAudioPlayBtn.style.display = 'none';
+  }
+  cleanupAudio();
+
   showToast('Cleared');
 });
+
+// Current audio play button handler
+if (currentAudioPlayBtn) {
+  currentAudioPlayBtn.addEventListener('click', () => {
+    if (currentAudioPlayBtn.classList.contains('playing')) {
+      // Stop currently playing audio
+      stopAudio();
+    } else if (currentAudioBlob) {
+      // Play current audio
+      playCurrentAudio();
+    }
+  });
+}
 
 // Try Demo button handler
 const tryDemoBtn = document.getElementById('tryDemoBtn');
@@ -1121,6 +1148,47 @@ function cleanupAudio() {
     btn.textContent = '▶';
     btn.classList.remove('playing');
   });
+  // Reset current audio play button
+  if (currentAudioPlayBtn) {
+    currentAudioPlayBtn.textContent = '▶';
+    currentAudioPlayBtn.classList.remove('playing');
+  }
+}
+
+/**
+ * Play audio from current recording
+ */
+function playCurrentAudio() {
+  if (!currentAudioBlob) {
+    showError('No audio available');
+    return;
+  }
+
+  // Stop any currently playing audio
+  cleanupAudio();
+
+  const url = URL.createObjectURL(currentAudioBlob);
+  currentAudioURL = url;
+  const audio = new Audio(url);
+
+  audio.onplay = () => {
+    if (currentAudioPlayBtn) {
+      currentAudioPlayBtn.textContent = '⏹';
+      currentAudioPlayBtn.classList.add('playing');
+    }
+  };
+
+  audio.onended = () => {
+    cleanupAudio();
+  };
+
+  audio.onerror = () => {
+    cleanupAudio();
+    showError('Failed to play audio');
+  };
+
+  currentlyPlayingAudio = audio;
+  audio.play();
 }
 
 /**
@@ -1175,14 +1243,21 @@ function stopAudio() {
 // are imported from savedNotes.js
 
 /**
- * Render all saved notes
+ * Render all saved notes with optional filtering
  */
 function renderSavedNotes() {
-  const notes = loadSavedNotes();
+  const allNotes = loadSavedNotes();
 
   savedNotesSection.classList.add('visible');
 
-  if (notes.length === 0) {
+  // Show/hide search input based on whether there are notes
+  if (allNotes.length > 0) {
+    savedNotesSearch.classList.add('visible');
+  } else {
+    savedNotesSearch.classList.remove('visible');
+  }
+
+  if (allNotes.length === 0) {
     savedNotesList.innerHTML = `
       <div class="saved-notes-empty">
         <p class="empty-state-title">No saved notes yet</p>
@@ -1196,10 +1271,27 @@ function renderSavedNotes() {
     return;
   }
 
+  // Apply filter if search query exists
+  const notes = filterNotes(allNotes, currentSearchQuery);
+
+  // Show "no matching notes" if filter returns empty
+  if (notes.length === 0 && currentSearchQuery) {
+    savedNotesList.innerHTML = `
+      <div class="saved-notes-empty">
+        <p class="empty-state-title">No matching notes</p>
+        <p class="empty-state-note">Try a different search term</p>
+      </div>
+    `;
+    return;
+  }
+
   savedNotesList.innerHTML = notes
     .map(
-      (note, index) => `
-      <div class="saved-note" data-index="${index}">
+      (note, index) => {
+        // Find the original index in allNotes for proper deletion
+        const originalIndex = allNotes.findIndex((n) => n.id === note.id);
+        return `
+      <div class="saved-note" data-index="${originalIndex}">
         <div class="saved-note-header">
           <span class="saved-note-time">${formatTimestamp(note.timestamp)}</span>
           <div class="saved-note-actions">
@@ -1211,7 +1303,8 @@ function renderSavedNotes() {
         <div class="saved-note-text">${escapeHtml(note.text)}</div>
         ${renderSavedNoteTrade(note.trade)}
       </div>
-    `
+    `;
+      }
     )
     .join('');
 }
@@ -1237,11 +1330,16 @@ async function saveCurrentNote() {
     return;
   }
 
-  // Convert audio blob to base64 if available
+  // Convert audio blob to base64 if available and within size limit
   let audioData = null;
   if (currentAudioBlob) {
     try {
-      audioData = await blobToBase64(currentAudioBlob);
+      // Check if audio is within size limit (500KB)
+      if (currentAudioBlob.size <= MAX_AUDIO_SIZE) {
+        audioData = await blobToBase64(currentAudioBlob);
+      } else {
+        console.warn(`Audio too large (${Math.round(currentAudioBlob.size / 1024)}KB), not saving. Limit: ${MAX_AUDIO_SIZE / 1024}KB`);
+      }
     } catch (err) {
       console.warn('Failed to save audio:', err);
     }
@@ -1351,6 +1449,37 @@ savedNotesList.addEventListener('click', (e) => {
       playNoteAudio(index);
     }
   }
+});
+
+// Search input handler with debouncing
+savedNotesSearchInput.addEventListener('input', (e) => {
+  const query = e.target.value;
+
+  // Show/hide clear button
+  if (query) {
+    savedNotesSearchClear.classList.add('visible');
+  } else {
+    savedNotesSearchClear.classList.remove('visible');
+  }
+
+  // Debounce search (150ms)
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer);
+  }
+
+  searchDebounceTimer = setTimeout(() => {
+    currentSearchQuery = query;
+    renderSavedNotes();
+  }, 150);
+});
+
+// Clear search button handler
+savedNotesSearchClear.addEventListener('click', () => {
+  savedNotesSearchInput.value = '';
+  savedNotesSearchClear.classList.remove('visible');
+  currentSearchQuery = '';
+  renderSavedNotes();
+  savedNotesSearchInput.focus();
 });
 
 // Initialize saved notes on page load
@@ -1665,6 +1794,7 @@ if (faqToggle && faqContent) {
 // ============================================================================
 
 let deferredPwaPrompt = null;
+const installBtn = document.getElementById('installBtn');
 
 // Capture the PWA install prompt event
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -1672,14 +1802,47 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   // Store the event for later use
   deferredPwaPrompt = e;
-  // Show install button/banner if desired
+  // Show install button
+  if (installBtn) {
+    installBtn.style.display = 'flex';
+  }
   console.log('PWA install prompt available');
 });
+
+// Handle install button click
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPwaPrompt) {
+      return;
+    }
+
+    // Show the install prompt
+    deferredPwaPrompt.prompt();
+
+    // Wait for the user's response
+    const { outcome } = await deferredPwaPrompt.userChoice;
+    console.log(`User response to install prompt: ${outcome}`);
+
+    // Clear the deferred prompt
+    deferredPwaPrompt = null;
+
+    // Hide the install button
+    installBtn.style.display = 'none';
+
+    if (outcome === 'accepted') {
+      showToast('Installing app...');
+    }
+  });
+}
 
 // Handle successful installation
 window.addEventListener('appinstalled', () => {
   console.log('PWA installed successfully');
   deferredPwaPrompt = null;
+  if (installBtn) {
+    installBtn.style.display = 'none';
+  }
+  showToast('App installed successfully!');
 });
 
 // Service Worker registration (handled by vite-plugin-pwa)
@@ -1689,4 +1852,26 @@ if ('serviceWorker' in navigator) {
     console.log('PWA ready');
   });
 }
+
+// ============================================================================
+// Offline/Online Indicator
+// ============================================================================
+
+const offlineIndicator = document.getElementById('offlineIndicator');
+
+/**
+ * Update offline indicator based on connection status
+ */
+function updateOnlineStatus() {
+  if (!offlineIndicator) return;
+
+  offlineIndicator.style.display = navigator.onLine ? 'none' : 'flex';
+}
+
+// Check initial status
+updateOnlineStatus();
+
+// Listen for online/offline events
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
 

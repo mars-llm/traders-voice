@@ -10,6 +10,7 @@ import { createPriceLevelChart } from './priceLevelChart.js';
 // Constants
 export const MAX_SAVED_NOTES = 10;
 export const STORAGE_KEY = 'traders-voice-notes';
+export const MAX_AUDIO_SIZE = 500 * 1024; // 500KB limit for audio storage
 
 /**
  * Convert Blob to base64 data URL
@@ -219,4 +220,49 @@ export function createNote({ text, trade = null, audioData = null, timestamp = D
     trade,
     audioData,
   };
+}
+
+/**
+ * Filter notes by search query
+ * @param {Array} notes - Array of notes to filter
+ * @param {string} query - Search query (case-insensitive)
+ * @returns {Array} - Filtered notes
+ */
+export function filterNotes(notes, query) {
+  if (!query || !query.trim()) {
+    return notes;
+  }
+
+  const searchTerm = query.toLowerCase().trim();
+
+  return notes.filter((note) => {
+    // Search in transcription text
+    if (note.text?.toLowerCase().includes(searchTerm)) {
+      return true;
+    }
+
+    // Search in trade info
+    if (!note.trade) {
+      return false;
+    }
+
+    const trade = note.trade;
+    const tradeFields = [
+      trade.ticker,
+      trade.action,
+      trade.timeframe
+    ];
+
+    // Check simple string fields
+    if (tradeFields.some(field => field?.toLowerCase().includes(searchTerm))) {
+      return true;
+    }
+
+    // Check indicators array
+    if (Array.isArray(trade.indicators)) {
+      return trade.indicators.some(ind => ind.toLowerCase().includes(searchTerm));
+    }
+
+    return false;
+  });
 }

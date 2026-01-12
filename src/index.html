@@ -44,6 +44,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="theme.css">
 </head>
 <body>
   <div class="container">
@@ -53,17 +54,42 @@
         <h1>Traders Voice</h1>
       </div>
       <div class="header-actions">
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle dark/light theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="theme-icon theme-icon-sun">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="theme-icon theme-icon-moon">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="installBtn" title="Install App" aria-label="Install as app" style="display: none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
         <button class="icon-btn" id="helpBtn" title="Examples & Tips" aria-label="Examples and Tips">?</button>
         <button class="icon-btn" id="aboutBtn" title="About" aria-label="About Traders Voice">i</button>
         <div class="model-selector">
           <select class="model-select" id="modelSelect" aria-label="Select AI model">
             <optgroup label="English Only">
-              <option value="Xenova/whisper-small.en" data-model="small.en">Best accuracy (244MB)</option>
+              <option value="Xenova/whisper-medium.en" data-model="medium.en">Highest accuracy (769MB)</option>
+              <option value="Xenova/whisper-small.en" data-model="small.en">Better accuracy (244MB)</option>
               <option value="Xenova/whisper-base.en" data-model="base.en" selected>Balanced (77MB)</option>
               <option value="Xenova/whisper-tiny.en" data-model="tiny.en">Fast (41MB)</option>
             </optgroup>
             <optgroup label="Multilingual">
-              <option value="Xenova/whisper-small" data-model="small">Best accuracy (244MB)</option>
+              <option value="Xenova/whisper-medium" data-model="medium">Highest accuracy (769MB)</option>
+              <option value="Xenova/whisper-small" data-model="small">Better accuracy (244MB)</option>
               <option value="Xenova/whisper-base" data-model="base">Balanced (75MB)</option>
               <option value="Xenova/whisper-tiny" data-model="tiny">Fast (39MB)</option>
             </optgroup>
@@ -154,7 +180,10 @@
         <div class="trade-card" id="tradeCard"></div>
 
         <div class="result-section" id="resultSection">
-          <div class="transcription" id="transcription"></div>
+          <div class="transcription-header">
+            <div class="transcription" id="transcription"></div>
+            <button class="audio-play-btn" id="currentAudioPlayBtn" style="display: none;" title="Play recording">▶</button>
+          </div>
           <div class="result-actions">
             <button class="btn btn-secondary" id="clearBtn">Clear</button>
             <div class="export-dropdown" id="exportDropdown">
@@ -196,6 +225,19 @@
         <div class="saved-notes-section" id="savedNotesSection">
           <div class="saved-notes-header">
             <h2>Saved Notes</h2>
+            <div class="saved-notes-search" id="savedNotesSearch">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input type="text" class="saved-notes-search-input" id="savedNotesSearchInput" placeholder="Search notes..." aria-label="Search saved notes">
+              <button class="saved-notes-search-clear" id="savedNotesSearchClear" title="Clear search" aria-label="Clear search">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
             <button class="btn btn-small btn-secondary" id="clearAllNotesBtn">Clear All</button>
           </div>
           <div class="saved-notes-list" id="savedNotesList"></div>
@@ -215,6 +257,19 @@
         <span>No Tracking</span>
         <span class="footer-dot"></span>
         <span>No Cookies</span>
+        <span class="footer-dot"></span>
+        <span class="offline-indicator" id="offlineIndicator" style="display: none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+            <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/>
+            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+            <line x1="12" y1="20" x2="12.01" y2="20"/>
+          </svg>
+          Offline
+        </span>
       </div>
       <a href="https://github.com/mars-llm/traders-voice" target="_blank" rel="noopener noreferrer" class="github-link">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -234,7 +289,7 @@
           </div>
           <div class="faq-item">
             <div class="faq-question">How big is the model download?</div>
-            <div class="faq-answer">41-244MB depending on the model you select. It downloads once and is cached for offline use.</div>
+            <div class="faq-answer">41-769MB depending on the model you select. It downloads once and is cached for offline use.</div>
           </div>
           <div class="faq-item">
             <div class="faq-question">Does it work offline?</div>
