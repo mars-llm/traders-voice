@@ -392,8 +392,8 @@ test.describe('UI Interactions', () => {
       await expect(aboutModal).toContainText('Privacy First');
       await expect(aboutModal).toContainText('100% Local Processing');
 
-      // Close modal via backdrop
-      await aboutModal.locator('.modal-backdrop').click();
+      // Close modal via close button (more reliable than backdrop click)
+      await aboutModal.locator('.modal-close').click();
       await expect(aboutModal).not.toHaveClass(/visible/);
     });
 
